@@ -36,10 +36,10 @@ const Navbar = () => {
         </div>
         <div className="hidden md:flex items-center gap-8">
           {["About", "Experience", "Projects", "Contact"].map((item) => (
-            <a key={item} href={`#${item.toLowerCase()}`} className="text-sm font-medium text-zinc-600 hover:text-zinc-900">{item}</a>
+            <a key={item} href={`#${item.toLowerCase()}`} className="text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors">{item}</a>
           ))}
         </div>
-        <button className="bg-zinc-900 text-white px-5 py-2 rounded-full text-sm font-medium">Resume</button>
+        <button className="bg-zinc-900 text-white px-5 py-2 rounded-full text-sm font-medium shadow-lg hover:bg-zinc-700 transition-colors">Resume</button>
       </div>
     </motion.nav>
   );
@@ -93,7 +93,7 @@ const About = () => {
         </div>
         <div>
           <h2 className="text-4xl font-bold text-zinc-900 mb-6">Financial Architect</h2>
-          <p className="text-zinc-600 leading-relaxed mb-6">
+          <p className="text-zinc-600 leading-relaxed mb-12">
             My career spans from the markets of <strong>Sri Lanka</strong> to strategic leadership as Head of Finance in the <strong>Philippines</strong>, 
             and now navigating aviation revenue in the <strong>Maldives</strong>.
           </p>
@@ -130,15 +130,15 @@ const Experience = () => {
           {jobs.map((job, i) => (
             <div key={i} className="relative pl-8 border-l border-zinc-200 pb-8 last:pb-0">
               <div className="absolute left-[-17px] top-0 w-8 h-8 bg-white border border-zinc-200 rounded-full flex items-center justify-center text-zinc-900">{job.icon}</div>
-              <div className="bg-white p-8 rounded-3xl border border-zinc-200 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white p-8 rounded-3xl border border-zinc-200 shadow-sm">
                 <div className="flex flex-col md:flex-row md:justify-between gap-4">
                   <div>
                     <h3 className="text-xl font-bold text-zinc-900">{job.role}</h3>
                     <p className="text-zinc-500">{job.company}</p>
                   </div>
                   <div className="text-left md:text-right">
-                    <span className="block text-xs font-bold text-zinc-400 uppercase tracking-widest"><Calendar className="inline w-3 h-3" /> {job.period}</span>
-                    <span className="block text-xs font-bold text-emerald-600 uppercase tracking-widest"><MapPin className="inline w-3 h-3" /> {job.loc}</span>
+                    <span className="block text-xs font-bold text-zinc-400 uppercase tracking-widest"><Calendar className="inline w-3 h-3 mr-1" /> {job.period}</span>
+                    <span className="block text-xs font-bold text-emerald-600 uppercase tracking-widest"><MapPin className="inline w-3 h-3 mr-1" /> {job.loc}</span>
                   </div>
                 </div>
               </div>
@@ -150,6 +150,47 @@ const Experience = () => {
   );
 };
 
+const Projects = () => {
+  const projects = [
+    { title: "AI Revenue Auditor", cat: "AI + Finance", desc: "Automated reconciliation of aviation ticket data using LLMs.", img: "https://picsum.photos/seed/finance/800/600" },
+    { title: "Predictive Cash Flow", cat: "Data Science", desc: "ML model to forecast seasonal revenue in tourism.", img: "https://picsum.photos/seed/data/800/600" }
+  ];
+
+  return (
+    <section id="projects" className="section-padding bg-white">
+      <div className="max-w-7xl mx-auto">
+        <h2 className="text-4xl font-bold text-zinc-900 mb-12">Selected Works</h2>
+        <div className="grid md:grid-cols-2 gap-8">
+          {projects.map((p, i) => (
+            <div key={i} className="group">
+              <div className="aspect-video rounded-3xl overflow-hidden mb-6 bg-zinc-100">
+                <img src={p.img} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+              </div>
+              <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest">{p.cat}</span>
+              <h3 className="text-2xl font-bold text-zinc-900 mt-2">{p.title}</h3>
+              <p className="text-zinc-500 mt-2">{p.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const Contact = () => (
+  <section id="contact" className="section-padding bg-zinc-900 text-white rounded-t-[3rem]">
+    <div className="max-w-7xl mx-auto text-center py-10">
+      <h2 className="text-5xl font-bold mb-8">Let's connect.</h2>
+      <p className="text-zinc-400 mb-12 max-w-md mx-auto">Open for discussions on AI integration in finance and aviation accounting.</p>
+      <div className="flex justify-center gap-6">
+        <a href="mailto:accountant@example.com" className="p-4 bg-white/10 rounded-2xl hover:bg-emerald-500 transition-colors"><Mail /></a>
+        <a href="#" className="p-4 bg-white/10 rounded-2xl hover:bg-blue-600 transition-colors"><Linkedin /></a>
+        <a href="#" className="p-4 bg-white/10 rounded-2xl hover:bg-zinc-700 transition-colors"><Github /></a>
+      </div>
+    </div>
+  </section>
+);
+
 export default function App() {
   return (
     <div className="font-sans selection:bg-emerald-500 selection:text-white">
@@ -158,7 +199,8 @@ export default function App() {
         <Hero />
         <About />
         <Experience />
-        {/* Simplified sections for Projects and Contact would follow similar patterns */}
+        <Projects />
+        <Contact />
       </main>
       <footer className="bg-zinc-900 text-zinc-500 py-12 text-center text-sm border-t border-white/5">
         © 2026 Amila Dewapriya. All rights reserved.

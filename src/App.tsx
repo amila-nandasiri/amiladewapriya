@@ -57,10 +57,18 @@ const Hero = () => (
         <p className="text-xl text-zinc-600 max-w-2xl mb-10 leading-relaxed">
           14 years of global finance leadership. Currently optimizing aviation revenue at Trans Maldivian Airways while exploring the frontiers of AI technology.
         </p>
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap gap-4 items-center">
           <a href="#projects" className="flex items-center gap-2 bg-zinc-900 text-white px-8 py-4 rounded-2xl font-medium shadow-xl">
             View Projects <ChevronRight className="w-4 h-4" />
           </a>
+          <div className="flex gap-4 ml-4">
+            <a href="https://github.com/amila-nandasiri" target="_blank" rel="noopener noreferrer" className="p-3 bg-white border border-zinc-200 rounded-xl hover:bg-zinc-50 transition-colors shadow-sm">
+              <Github className="w-5 h-5" />
+            </a>
+            <a href="https://www.linkedin.com/in/amila-devapriya/" target="_blank" rel="noopener noreferrer" className="p-3 bg-white border border-zinc-200 rounded-xl hover:bg-zinc-50 transition-colors shadow-sm">
+              <Linkedin className="w-5 h-5" />
+            </a>
+          </div>
         </div>
       </motion.div>
     </div>
@@ -183,9 +191,15 @@ const Contact = () => (
       <h2 className="text-5xl font-bold mb-8">Let's connect.</h2>
       <p className="text-zinc-400 mb-12 max-w-md mx-auto">Open for discussions on AI integration in finance and aviation accounting.</p>
       <div className="flex justify-center gap-6">
-        <a href="mailto:accountant@example.com" className="p-4 bg-white/10 rounded-2xl hover:bg-emerald-500 transition-colors"><Mail /></a>
-        <a href="#" className="p-4 bg-white/10 rounded-2xl hover:bg-blue-600 transition-colors"><Linkedin /></a>
-        <a href="#" className="p-4 bg-white/10 rounded-2xl hover:bg-zinc-700 transition-colors"><Github /></a>
+        <a href="mailto:hello@dewapriya.com" className="p-4 bg-white/10 rounded-2xl hover:bg-emerald-500 transition-colors">
+          <Mail />
+        </a>
+        <a href="https://www.linkedin.com/in/amila-devapriya/" target="_blank" rel="noopener noreferrer" className="p-4 bg-white/10 rounded-2xl hover:bg-blue-600 transition-colors">
+          <Linkedin />
+        </a>
+        <a href="https://github.com/amila-nandasiri" target="_blank" rel="noopener noreferrer" className="p-4 bg-white/10 rounded-2xl hover:bg-zinc-700 transition-colors">
+          <Github />
+        </a>
       </div>
     </div>
   </section>
@@ -202,8 +216,14 @@ export default function App() {
         <Projects />
         <Contact />
       </main>
-      <footer className="bg-zinc-900 text-zinc-500 py-12 text-center text-sm border-t border-white/5">
-        © 2026 Amila Dewapriya. All rights reserved.
+      <footer className="bg-zinc-900 text-zinc-500 py-12 px-6 border-t border-white/5">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+          <p className="text-sm">© 2026 Amila Dewapriya. All rights reserved.</p>
+          <div className="flex gap-8 text-sm font-medium">
+            <a href="https://www.linkedin.com/in/amila-devapriya/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">LinkedIn</a>
+            <a href="https://github.com/amila-nandasiri" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GitHub</a>
+          </div>
+        </div>
       </footer>
     </div>
   );

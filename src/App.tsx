@@ -39,14 +39,21 @@ const Navbar = () => {
             <a key={item} href={`#${item.toLowerCase()}`} className="text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors">{item}</a>
           ))}
         </div>
-        <button className="bg-zinc-900 text-white px-5 py-2 rounded-full text-sm font-medium shadow-lg hover:bg-zinc-700 transition-colors">Resume</button>
+        {/* Updated Resume Button to link to your PDF */}
+        <a 
+          href="Resume.pdf" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="bg-zinc-900 text-white px-5 py-2 rounded-full text-sm font-medium shadow-lg hover:bg-zinc-700 transition-colors"
+        >
+          Resume
+        </a>
       </div>
     </motion.nav>
   );
 };
 
 const Hero = () => (
-  // Reduced to 70vh and lowered padding to py-12
   <section className="min-h-[70vh] flex flex-col justify-center py-12 px-6 md:px-12 lg:px-24 relative overflow-hidden">
     <div className="absolute top-1/4 -right-20 w-96 h-96 bg-emerald-50 rounded-full blur-3xl -z-10 opacity-60" />
     <div className="max-w-4xl">
@@ -84,7 +91,6 @@ const About = () => {
   ];
 
   return (
-    // Reduced padding to py-10
     <section id="about" className="py-10 px-6 md:px-12 lg:px-24 bg-white">
       <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-start">
         <div className="relative">
@@ -133,7 +139,6 @@ const Experience = () => {
   ];
 
   return (
-    // Reduced padding and heading margins
     <section id="experience" className="py-10 px-6 md:px-12 lg:px-24 bg-zinc-50">
       <div className="max-w-4xl mx-auto">
         <h2 className="text-3xl font-bold text-center text-zinc-900 mb-8">Professional Timeline</h2>
@@ -189,7 +194,6 @@ const Projects = () => {
 };
 
 const Contact = () => (
-  // Tightened contact section
   <section id="contact" className="py-10 px-6 md:px-12 lg:px-24 bg-zinc-900 text-white rounded-t-[3rem]">
     <div className="max-w-7xl mx-auto text-center py-6">
       <h2 className="text-4xl font-bold mb-4">Let's connect.</h2>

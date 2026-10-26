@@ -7,12 +7,14 @@ import {
   Linkedin,
   Mail,
   Menu,
+  Phone,
   X
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 
 const LINKS = {
   email: "amiladnandasiri@gmail.com",
+  phone: "+94 773 934329",
   github: "https://github.com/amila-nandasiri",
   linkedin: "https://www.linkedin.com/in/amila-devapriya/",
   resume: "Resume.pdf"
@@ -466,6 +468,9 @@ const Contact = () => (
         <div className="flex flex-wrap gap-3">
           <a href={`mailto:${LINKS.email}`} className="inline-flex items-center gap-2 bg-white text-zinc-900 px-6 py-3 rounded-full text-sm font-medium hover:bg-emerald-400 transition-colors">
             <Mail className="w-4 h-4" /> {LINKS.email}
+          </a>
+          <a href={`tel:${LINKS.phone.replace(/\s/g, "")}`} className="inline-flex items-center gap-2 border border-white/20 px-6 py-3 rounded-full text-sm font-medium hover:bg-white/10 transition-colors">
+            <Phone className="w-4 h-4" /> {LINKS.phone}
           </a>
           <a href={LINKS.linkedin} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 border border-white/20 px-6 py-3 rounded-full text-sm font-medium hover:bg-white/10 transition-colors">
             <Linkedin className="w-4 h-4" /> LinkedIn

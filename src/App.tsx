@@ -241,15 +241,17 @@ const Projects = () => {
     {
       title: "AR Collections Dashboard",
       tag: "Finance × Data",
-      desc: "An accounts-receivable dashboard for a Maldives seaplane operator: aging, DSO and collection effectiveness, plus a worklist that ranks 100 customers by who to call first.",
+      desc: "An accounts-receivable dashboard showing aging, DSO and collection effectiveness, plus a worklist that ranks customers by who to call first. Try it on sample data for a Maldives seaplane operator, or load your own.",
       points: [
-        "Month-end DSO and CEI rebuilt from 18 months of invoice and payment history",
-        "Priority score weighting overdue balances by age, risk rating and credit-limit breaches",
-        "Drill-down from customer to individual open invoices"
+        "Upload your own Excel or CSV exports. Files are processed in your browser and never uploaded",
+        "Download an Excel or PDF report: summary, aged debtors and open invoices",
+        "Month-end DSO and CEI rebuilt from invoice and payment history",
+        "Works offline as a single HTML file"
       ],
-      stack: ["React", "TypeScript", "Recharts", "Python"],
+      stack: ["React", "TypeScript", "Recharts", "Excel", "Python"],
       image: "projects/ar-collections.jpg",
       demo: "projects/ar-collections/",
+      download: "projects/ar-collections/ar-collections-dashboard.html",
       code: "https://github.com/amila-nandasiri/ar-collections-dashboard"
     }
   ];
@@ -289,6 +291,9 @@ const Projects = () => {
                   <div className="flex flex-wrap gap-3 mt-auto">
                     <a href={p.demo} className="inline-flex items-center gap-2 bg-zinc-900 text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-zinc-700 transition-colors">
                       Open live demo <ArrowUpRight className="w-4 h-4" />
+                    </a>
+                    <a href={p.download} download className="inline-flex items-center gap-2 border border-zinc-200 text-zinc-900 px-5 py-2.5 rounded-full text-sm font-medium hover:border-zinc-400 transition-colors">
+                      <Download className="w-4 h-4" /> Download (HTML)
                     </a>
                     <a href={p.code} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 border border-zinc-200 text-zinc-900 px-5 py-2.5 rounded-full text-sm font-medium hover:border-zinc-400 transition-colors">
                       <Github className="w-4 h-4" /> View code

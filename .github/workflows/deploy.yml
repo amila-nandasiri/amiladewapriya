@@ -3,6 +3,8 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [ "main" ]
+  # Run manually from the Actions tab to pick up changes to a project repository
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -24,6 +26,15 @@ jobs:
         run: npm install
       - name: Build
         run: npm run build
+      # Projects live in their own repositories and are published under /projects/
+      - name: Build AR Collections Dashboard
+        run: |
+          git clone --depth 1 https://github.com/amila-nandasiri/ar-collections-dashboard "$RUNNER_TEMP/ar-collections"
+          cd "$RUNNER_TEMP/ar-collections"
+          npm ci
+          npm run build
+          mkdir -p "$GITHUB_WORKSPACE/dist/projects/ar-collections"
+          cp -r dist/. "$GITHUB_WORKSPACE/dist/projects/ar-collections/"
       - name: Upload Artifacts
         uses: actions/upload-pages-artifact@v3
         with:

@@ -239,16 +239,18 @@ const About = () => {
 const Projects = () => {
   const projects = [
     {
-      title: "Maldives Rainfall Tracker",
-      desc: "Interactive dashboard tracking rainfall and precipitation patterns across the Maldives, built on live Open-Meteo weather data.",
-      stack: ["React", "TypeScript", "Recharts", "Open-Meteo API"],
-      href: "https://github.com/amila-nandasiri/Maldives-Rainfall"
-    },
-    {
-      title: "Malé Rainfall Dashboard",
-      desc: "Python pipeline that pulls 14 days of history and a 5-day forecast for Malé, then charts rainfall against temperature.",
-      stack: ["Python", "pandas", "Plotly", "REST API"],
-      href: "https://github.com/amila-nandasiri/rainfall-dashboard"
+      title: "AR Collections Dashboard",
+      tag: "Finance × Data",
+      desc: "An accounts-receivable dashboard for a Maldives seaplane operator: aging, DSO and collection effectiveness, plus a worklist that ranks 100 customers by who to call first.",
+      points: [
+        "Month-end DSO and CEI rebuilt from 18 months of invoice and payment history",
+        "Priority score weighting overdue balances by age, risk rating and credit-limit breaches",
+        "Drill-down from customer to individual open invoices"
+      ],
+      stack: ["React", "TypeScript", "Recharts", "Python"],
+      image: "projects/ar-collections.jpg",
+      demo: "projects/ar-collections/",
+      code: "https://github.com/amila-nandasiri/ar-collections-dashboard"
     }
   ];
 
@@ -256,36 +258,49 @@ const Projects = () => {
     <section id="projects" className="py-24 px-6">
       <div className="max-w-6xl mx-auto">
         <SectionHeader index="02" label="Projects" title="Things I've built." />
-        <div className="grid md:grid-cols-2 gap-5">
-          {projects.map((p, i) => {
-            return (
-              <Reveal key={p.title} delay={(i % 2) * 0.08}>
-                <a
-                  href={p.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group flex flex-col h-full bg-white border border-zinc-200 rounded-2xl p-7 hover:border-zinc-400 hover:shadow-lg hover:shadow-zinc-200/60 transition-all"
-                >
-                  <div className="flex justify-between items-start mb-4">
-                    <span className="font-mono text-xs text-zinc-400">{String(i + 1).padStart(2, "0")}</span>
-                    <ArrowUpRight className="w-5 h-5 text-zinc-400 group-hover:text-emerald-600 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-all" />
-                  </div>
-                  <h3 className="text-xl font-semibold tracking-tight text-zinc-900 mb-2">{p.title}</h3>
-                  <p className="text-zinc-600 leading-relaxed mb-6 flex-1">{p.desc}</p>
-                  <div className="flex flex-wrap gap-x-4 gap-y-1">
+        <div className="space-y-6">
+          {projects.map((p) => (
+            <Reveal key={p.title}>
+              <article className="grid lg:grid-cols-[1.15fr_1fr] bg-white border border-zinc-200 rounded-3xl overflow-hidden">
+                <a href={p.demo} className="group block bg-zinc-100 border-b lg:border-b-0 lg:border-r border-zinc-200 overflow-hidden">
+                  <img
+                    src={p.image}
+                    alt={`${p.title} screenshot`}
+                    loading="lazy"
+                    className="w-full h-full object-cover object-left-top group-hover:scale-[1.02] transition-transform duration-500"
+                  />
+                </a>
+                <div className="p-7 md:p-9 flex flex-col">
+                  <p className="font-mono text-xs text-emerald-700 mb-3">{p.tag}</p>
+                  <h3 className="text-2xl font-semibold tracking-tight text-zinc-900 mb-3">{p.title}</h3>
+                  <p className="text-zinc-600 leading-relaxed mb-5">{p.desc}</p>
+                  <ul className="space-y-2 mb-6">
+                    {p.points.map((pt) => (
+                      <li key={pt} className="text-sm text-zinc-600 leading-relaxed pl-5 relative before:content-[''] before:absolute before:left-0 before:top-[0.65em] before:w-2 before:h-px before:bg-zinc-400">
+                        {pt}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 mb-7">
                     {p.stack.map((t) => (
-                      <span key={t} className="font-mono text-xs text-emerald-700">{t}</span>
+                      <span key={t} className="font-mono text-xs text-zinc-500">{t}</span>
                     ))}
                   </div>
-                </a>
-              </Reveal>
-            );
-          })}
+                  <div className="flex flex-wrap gap-3 mt-auto">
+                    <a href={p.demo} className="inline-flex items-center gap-2 bg-zinc-900 text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-zinc-700 transition-colors">
+                      Open live demo <ArrowUpRight className="w-4 h-4" />
+                    </a>
+                    <a href={p.code} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 border border-zinc-200 text-zinc-900 px-5 py-2.5 rounded-full text-sm font-medium hover:border-zinc-400 transition-colors">
+                      <Github className="w-4 h-4" /> View code
+                    </a>
+                  </div>
+                </div>
+              </article>
+            </Reveal>
+          ))}
         </div>
         <Reveal>
-          <a href={LINKS.github} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 mt-8 text-sm text-zinc-600 hover:text-zinc-900 transition-colors">
-            <Github className="w-4 h-4" /> More on GitHub <ArrowUpRight className="w-4 h-4" />
-          </a>
+          <p className="mt-8 text-sm text-zinc-500">More finance and data projects are on the way.</p>
         </Reveal>
       </div>
     </section>

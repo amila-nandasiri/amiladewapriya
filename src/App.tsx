@@ -255,6 +255,22 @@ const Projects = () => {
       demo: "projects/ar-collections/",
       download: "projects/ar-collections/ar-collections-dashboard.html",
       code: "https://github.com/amila-nandasiri/ar-collections-dashboard"
+    },
+    {
+      title: "13-Week Cash Flow Forecast",
+      tag: "Treasury × Data",
+      desc: "The short-term liquidity model lenders ask for. It runs best, base and worst-case scenarios side by side, draws a credit facility to protect minimum cash, and tests a liquidity covenant every week.",
+      points: [
+        "Scenario sliders for sales, collection delays, bad debt, fuel price, costs and capex timing",
+        "Credit facility draws, repayments and interest, with a weekly covenant test and funding-gap warning",
+        "Lender-style 13-week table, cash bridge, and Excel or PDF reports",
+        "Upload your own forecast from an Excel template; works offline"
+      ],
+      stack: ["React", "TypeScript", "Recharts", "Excel"],
+      image: "projects/cash-flow.jpg",
+      demo: "projects/cash-flow/",
+      download: "projects/cash-flow/cash-flow-forecast.html",
+      code: "https://github.com/amila-nandasiri/cash-flow-forecast"
     }
   ];
 

@@ -35,6 +35,14 @@ jobs:
           npm run build
           mkdir -p "$GITHUB_WORKSPACE/dist/projects/ar-collections"
           cp -r dist/. "$GITHUB_WORKSPACE/dist/projects/ar-collections/"
+      - name: Build 13-Week Cash Flow Forecast
+        run: |
+          git clone --depth 1 https://github.com/amila-nandasiri/cash-flow-forecast "$RUNNER_TEMP/cash-flow"
+          cd "$RUNNER_TEMP/cash-flow"
+          npm ci
+          npm run build
+          mkdir -p "$GITHUB_WORKSPACE/dist/projects/cash-flow"
+          cp -r dist/. "$GITHUB_WORKSPACE/dist/projects/cash-flow/"
       - name: Upload Artifacts
         uses: actions/upload-pages-artifact@v3
         with:

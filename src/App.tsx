@@ -206,7 +206,7 @@ const About = () => {
                 <strong className="text-zinc-900 font-medium">LOLC Finance Philippines</strong> as Head of Finance, running a team of nine.
               </p>
               <p>
-                Today I'm an Accountant at <strong className="text-zinc-900 font-medium">Trans Maldivian Airways</strong>. Alongside that, I build tools and dashboards: small, practical software that turns raw data into
+                Today I'm a Revenue Accountant at <strong className="text-zinc-900 font-medium">Trans Maldivian Airways</strong>. Alongside that, I build tools and dashboards: small, practical software that turns raw data into
                 decisions.
               </p>
               <p>
@@ -295,7 +295,7 @@ const Projects = () => {
 const Experience = () => {
   const jobs = [
     {
-      role: "Accountant",
+      role: "Revenue Accountant",
       company: "Trans Maldivian Airways",
       loc: "Malé, Maldives",
       period: "2025 — Present",

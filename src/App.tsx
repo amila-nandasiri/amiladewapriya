@@ -100,10 +100,10 @@ const Navbar = () => {
 
 const Hero = () => {
   const stats = [
-    { value: "14+", label: "Years in finance" },
+    { value: "15+", label: "Years in finance" },
     { value: "6", label: "Years as Head of Finance" },
-    { value: "3", label: "Countries" },
-    { value: "CMA", label: "Australia" }
+    { value: "9", label: "Finance team members led" },
+    { value: "3", label: "Countries" }
   ];
 
   return (
@@ -121,7 +121,7 @@ const Hero = () => {
               builds with <span className="text-emerald-600">data &amp; code.</span>
             </h1>
             <p className="text-lg text-zinc-600 max-w-xl leading-relaxed mb-10">
-              14 years in finance across Sri Lanka, the Philippines and the Maldives, including six as Head of Finance.
+              15 years in finance across Sri Lanka, the Philippines and the Maldives, including six as Head of Finance.
               I now use Python, data and AI to automate and improve the work finance teams do every day.
             </p>
             <div className="flex flex-wrap gap-3 items-center">
@@ -157,7 +157,7 @@ const Hero = () => {
             className="hidden md:block"
           >
             <div className="w-64 lg:w-72 aspect-[4/5] rounded-3xl overflow-hidden bg-zinc-100 ring-1 ring-zinc-200 shadow-2xl shadow-zinc-300/40">
-              <img src="Profile.png" alt="Amila Dewapriya" className="w-full h-full object-cover" />
+              <img src="profile.jpg" alt="Amila Dewapriya" className="w-full h-full object-cover" />
             </div>
           </motion.div>
         </div>
@@ -181,15 +181,15 @@ const About = () => {
   const skills = [
     {
       category: "Finance & Accounting",
-      items: ["Financial Reporting", "IFRS", "Audited Financials", "Forecasting & Budgeting", "Revenue Accounting", "Credit Control", "Internal Controls", "MIS Reporting"]
+      items: ["Financial Reporting", "IFRS & GAAP", "Auditing", "Forecasting & Analytics", "Revenue Recovery", "Credit Control", "Internal Controls & Risk", "Tax & GST Compliance"]
     },
     {
       category: "Data & Technology",
-      items: ["Python", "pandas", "SQL", "Plotly", "React", "TypeScript", "AI / LLM Tools", "Process Automation"]
+      items: ["Python", "pandas", "SQL", "Plotly", "React", "TypeScript", "Generative AI", "Process Automation"]
     },
     {
       category: "Systems",
-      items: ["Oracle Fusion Cloud", "MS Business Central", "SAP", "QuickBooks", "Power BI", "Excel & VBA"]
+      items: ["Microsoft Dynamics 365 BC", "Oracle Fusion Cloud", "Oracle E-Business Suite", "QuickBooks", "Power BI", "Advanced Excel", "Notion"]
     }
   ];
 
@@ -201,13 +201,13 @@ const About = () => {
           <Reveal>
             <div className="space-y-5 text-zinc-600 leading-relaxed">
               <p>
-                I started my career in branch accounting at <strong className="text-zinc-900 font-medium">LOLC Holdings</strong> in Sri Lanka,
-                then spent six years leading finance at <strong className="text-zinc-900 font-medium">LOLC Finance Philippines</strong>, as
-                Head of Finance and later Director.
+                I started out in audit and accounting in Kandy, then spent six years in branch accounting at{" "}
+                <strong className="text-zinc-900 font-medium">LOLC Holdings</strong> in Sri Lanka. From 2019 I led finance at{" "}
+                <strong className="text-zinc-900 font-medium">LOLC Finance Philippines</strong> as Head of Finance, running a team of nine.
               </p>
               <p>
-                Today I work in aviation revenue at <strong className="text-zinc-900 font-medium">Trans Maldivian Airways</strong>. Alongside
-                that, I build tools and dashboards: small, practical software that turns raw data into decisions.
+                Today I'm Revenue Accountant at <strong className="text-zinc-900 font-medium">Trans Maldivian Airways</strong>. Alongside that, I build tools and dashboards: small, practical software that turns raw data into
+                decisions.
               </p>
               <p>
                 I know the numbers, the controls and the month-end reality, and I can build the technology that supports them.
@@ -308,38 +308,50 @@ const Projects = () => {
 const Experience = () => {
   const jobs = [
     {
-      role: "Accountant, Revenue",
+      role: "Revenue Accountant",
       company: "Trans Maldivian Airways",
-      loc: "Maldives",
+      loc: "Malé, Maldives",
       period: "2025 — Present",
       points: [
-        "Improved Days Sales Outstanding by 13% through credit control and timely collections",
-        "Oversee and analyse revenue generation against company goals and targets",
-        "Work with commercial teams on pricing strategy and fare structures",
-        "Built a contract comparison process to flag clause changes between agreements"
+        "Own end-to-end accounts receivable and credit control for luxury resort clients",
+        "Build Excel and Power BI dashboards to analyse revenue, monitor KPIs and forecast cash flow",
+        "Reconcile high-volume passenger, charter, cargo and ancillary revenue, resolving discrepancies",
+        "Prepare monthly management reports and TGST/GST returns in line with MIRA regulations",
+        "Use Microsoft Dynamics and automation tools to streamline accounting and reporting"
       ]
     },
     {
-      role: "Head of Finance · Director",
+      role: "Head of Finance",
       company: "LOLC Finance Philippines Inc.",
-      loc: "Philippines",
+      loc: "Cabanatuan City, Philippines",
       period: "2019 — 2025",
       points: [
-        "Led the Finance Operations and Finance Corporate departments; appointed Director in 2024",
-        "Owned monthly and audited financials, business forecasts and management reporting",
-        "Designed and reviewed processes for smooth business operations",
-        "Managed reporting requirements for funding partners and ran staff training on policy and process"
+        "Led the Finance Operations and Corporate Finance departments, managing a team of nine",
+        "Owned financial reporting, audit, budgeting, forecasting and variance analysis",
+        "Managed banking relationships and funding partners on credit facilities and financing",
+        "Designed financial policies, SOPs and internal control frameworks",
+        "Drove process automation and finance transformation using Excel, Power BI and Oracle ERP"
       ]
     },
     {
       role: "Branch Accountant",
       company: "LOLC Holdings PLC",
-      loc: "Sri Lanka",
+      loc: "Colombo, Sri Lanka",
       period: "2012 — 2019",
       points: [
-        "Prepared branch accounting and management reports",
-        "Responsible for cash office operations and internal controls",
-        "Supported system operations and special matters across regional branches"
+        "Prepared financial and management reports on branch performance and profitability",
+        "Ensured compliance with controls and policies; resolved discrepancies across regional branches",
+        "Managed purchase orders and accountability for branch assets"
+      ]
+    },
+    {
+      role: "Accounts Executive",
+      company: "Accounting Consultancy Services Kandy",
+      loc: "Kandy, Sri Lanka",
+      period: "2011 — 2012",
+      points: [
+        "Performed accounting, audit and compliance work for manufacturing, transport and non-profit clients",
+        "Prepared financial statements, audit reports and management information reports"
       ]
     }
   ];
@@ -379,14 +391,16 @@ const Experience = () => {
 const Credentials = () => {
   const education = [
     { title: "Master of Business Administration", org: "London Metropolitan University", year: "2024" },
-    { title: "Google AI Professional Certificate", org: "Google", year: "2026" },
     { title: "Diploma in Credit Management", org: "Sri Lanka Institute of Credit Management", year: "2021" },
-    { title: "Certificate in Banking and Finance", org: "Institute of Bankers Sri Lanka", year: "2013" }
+    { title: "Certificate in Banking & Finance", org: "Institute of Bankers Sri Lanka", year: "2013" },
+    { title: "Google AI Professional Certificates", org: "Google" },
+    { title: "Claude 101", org: "Anthropic" }
   ];
   const memberships = [
-    { title: "Certified Management Accountant", org: "CMA Australia" },
-    { title: "Member", org: "Association of Accounting Technicians of Sri Lanka" },
-    { title: "Member", org: "Chartered Professional Managers Sri Lanka" }
+    { title: "Certified Management Accountant · CMA64967", org: "CMA Australia" },
+    { title: "Member · IPA374217", org: "Institute of Public Accountants" },
+    { title: "Member · M11025", org: "Association of Accounting Technicians of Sri Lanka" },
+    { title: "Member · ACPM02190", org: "Chartered Professional Managers Sri Lanka" }
   ];
 
   return (
@@ -404,7 +418,7 @@ const Credentials = () => {
                       <p className="font-medium text-zinc-900">{e.title}</p>
                       <p className="text-sm text-zinc-500">{e.org}</p>
                     </div>
-                    <span className="font-mono text-sm text-zinc-400 shrink-0">{e.year}</span>
+                    {e.year && <span className="font-mono text-sm text-zinc-400 shrink-0">{e.year}</span>}
                   </li>
                 ))}
               </ul>

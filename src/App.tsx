@@ -12,7 +12,7 @@ import {
 import { useEffect, useState, type ReactNode } from "react";
 
 const LINKS = {
-  email: "hello@dewapriya.com",
+  email: "amiladnandasiri@gmail.com",
   github: "https://github.com/amila-nandasiri",
   linkedin: "https://www.linkedin.com/in/amila-devapriya/",
   resume: "Resume.pdf"
@@ -206,7 +206,7 @@ const About = () => {
                 <strong className="text-zinc-900 font-medium">LOLC Finance Philippines</strong> as Head of Finance, running a team of nine.
               </p>
               <p>
-                Today I'm Revenue Accountant at <strong className="text-zinc-900 font-medium">Trans Maldivian Airways</strong>. Alongside that, I build tools and dashboards: small, practical software that turns raw data into
+                Today I'm an Accountant at <strong className="text-zinc-900 font-medium">Trans Maldivian Airways</strong>. Alongside that, I build tools and dashboards: small, practical software that turns raw data into
                 decisions.
               </p>
               <p>
@@ -249,16 +249,6 @@ const Projects = () => {
       desc: "Python pipeline that pulls 14 days of history and a 5-day forecast for Malé, then charts rainfall against temperature.",
       stack: ["Python", "pandas", "Plotly", "REST API"],
       href: "https://github.com/amila-nandasiri/rainfall-dashboard"
-    },
-    {
-      title: "AI Revenue Auditor",
-      desc: "Automated reconciliation of aviation ticket data using large language models.",
-      stack: ["AI + Finance", "LLMs", "Automation"]
-    },
-    {
-      title: "Predictive Cash Flow",
-      desc: "Machine-learning model to forecast seasonal revenue in tourism.",
-      stack: ["Data Science", "Forecasting", "Python"]
     }
   ];
 
@@ -268,20 +258,17 @@ const Projects = () => {
         <SectionHeader index="02" label="Projects" title="Things I've built." />
         <div className="grid md:grid-cols-2 gap-5">
           {projects.map((p, i) => {
-            const Card = p.href ? "a" : "div";
             return (
               <Reveal key={p.title} delay={(i % 2) * 0.08}>
-                <Card
-                  {...(p.href ? { href: p.href, target: "_blank", rel: "noopener noreferrer" } : {})}
+                <a
+                  href={p.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="group flex flex-col h-full bg-white border border-zinc-200 rounded-2xl p-7 hover:border-zinc-400 hover:shadow-lg hover:shadow-zinc-200/60 transition-all"
                 >
                   <div className="flex justify-between items-start mb-4">
                     <span className="font-mono text-xs text-zinc-400">{String(i + 1).padStart(2, "0")}</span>
-                    {p.href ? (
-                      <ArrowUpRight className="w-5 h-5 text-zinc-400 group-hover:text-emerald-600 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-all" />
-                    ) : (
-                      <span className="font-mono text-[11px] text-zinc-500 bg-zinc-100 px-2 py-0.5 rounded">In progress</span>
-                    )}
+                    <ArrowUpRight className="w-5 h-5 text-zinc-400 group-hover:text-emerald-600 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-all" />
                   </div>
                   <h3 className="text-xl font-semibold tracking-tight text-zinc-900 mb-2">{p.title}</h3>
                   <p className="text-zinc-600 leading-relaxed mb-6 flex-1">{p.desc}</p>
@@ -290,7 +277,7 @@ const Projects = () => {
                       <span key={t} className="font-mono text-xs text-emerald-700">{t}</span>
                     ))}
                   </div>
-                </Card>
+                </a>
               </Reveal>
             );
           })}
@@ -308,7 +295,7 @@ const Projects = () => {
 const Experience = () => {
   const jobs = [
     {
-      role: "Revenue Accountant",
+      role: "Accountant",
       company: "Trans Maldivian Airways",
       loc: "Malé, Maldives",
       period: "2025 — Present",

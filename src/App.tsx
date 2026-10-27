@@ -113,6 +113,12 @@ const Hero = () => {
       <div className="max-w-6xl mx-auto">
         <div className="grid md:grid-cols-[1fr_auto] gap-12 md:gap-16 items-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+            {/* Phones: smaller photo above the headline (the large one shows from tablet width up) */}
+            <img
+              src="profile.jpg"
+              alt="Amila Dewapriya"
+              className="md:hidden w-28 h-28 rounded-2xl object-cover object-top ring-1 ring-zinc-200 shadow-lg shadow-zinc-300/40 mb-6"
+            />
             <p className="inline-flex items-center gap-2 font-mono text-xs text-zinc-500 border border-zinc-200 bg-white rounded-full px-3 py-1.5 mb-8">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Finance × Technology

@@ -128,7 +128,7 @@ const Hero = () => {
             </h1>
             <p className="text-lg text-zinc-600 max-w-xl leading-relaxed mb-10">
               15 years in finance across Sri Lanka, the Philippines and the Maldives, including six as Head of Finance.
-              I now use data and AI to automate and improve the work finance teams do every day.
+              I now use Python, data and AI to automate and improve the work finance teams do every day.
             </p>
             <div className="flex flex-wrap gap-3 items-center">
               <a
@@ -191,7 +191,7 @@ const About = () => {
     },
     {
       category: "Data & Technology",
-      items: ["Plotly", "React", "TypeScript", "Generative AI", "Process Automation"]
+      items: ["Python", "pandas", "SQL", "Plotly", "React", "TypeScript", "Generative AI", "Process Automation"]
     },
     {
       category: "Systems",

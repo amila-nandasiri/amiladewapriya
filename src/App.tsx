@@ -275,6 +275,22 @@ const Projects = () => {
       demo: "projects/cash-flow/",
       download: "projects/cash-flow/cash-flow-forecast.html",
       code: "https://github.com/amila-nandasiri/cash-flow-forecast"
+    },
+    {
+      title: "IFRS 16 Lease Calculator",
+      tag: "Technical accounting × Code",
+      desc: "Lease accounting for a whole portfolio, from aircraft and property to vehicles. It measures the lease liability and right-of-use asset, builds the schedules and journals, and produces the year-end disclosures.",
+      points: [
+        "Initial measurement with escalations, incentives, direct costs, restoration and purchase options",
+        "Monthly amortisation, depreciation and journal entries, with short-term and low-value exemptions",
+        "Year-end disclosures: movements, current/non-current split, P&L, cash flow and maturity analysis",
+        "Upload your lease register from an Excel template; Excel and PDF reports; works offline"
+      ],
+      stack: ["IFRS 16", "React", "TypeScript", "Excel"],
+      image: "projects/ifrs16.jpg",
+      demo: "projects/ifrs16/",
+      download: "projects/ifrs16/ifrs16-lease-calculator.html",
+      code: "https://github.com/amila-nandasiri/ifrs16-lease-calculator"
     }
   ];
 

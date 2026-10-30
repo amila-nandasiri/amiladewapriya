@@ -43,6 +43,14 @@ jobs:
           npm run build
           mkdir -p "$GITHUB_WORKSPACE/dist/projects/cash-flow"
           cp -r dist/. "$GITHUB_WORKSPACE/dist/projects/cash-flow/"
+      - name: Build IFRS 16 Lease Calculator
+        run: |
+          git clone --depth 1 https://github.com/amila-nandasiri/ifrs16-lease-calculator "$RUNNER_TEMP/ifrs16"
+          cd "$RUNNER_TEMP/ifrs16"
+          npm ci
+          npm run build
+          mkdir -p "$GITHUB_WORKSPACE/dist/projects/ifrs16"
+          cp -r dist/. "$GITHUB_WORKSPACE/dist/projects/ifrs16/"
       - name: Upload Artifacts
         uses: actions/upload-pages-artifact@v3
         with:

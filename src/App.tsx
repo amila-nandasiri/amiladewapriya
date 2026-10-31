@@ -291,6 +291,22 @@ const Projects = () => {
       demo: "projects/ifrs16/",
       download: "projects/ifrs16/ifrs16-lease-calculator.html",
       code: "https://github.com/amila-nandasiri/ifrs16-lease-calculator"
+    },
+    {
+      title: "Three-Statement Financial Model",
+      tag: "FP&A × Modelling",
+      desc: "An integrated income statement, balance sheet and cash flow, from two years of actuals into a five-year forecast. It is driver-based, with base, upside and downside scenarios, and the balance sheet balances every year.",
+      points: [
+        "Working capital from receivable, inventory and payable days; capex, depreciation and IFRS 16 leases",
+        "Automatic revolver protecting minimum cash, with leverage and interest-cover covenant tests",
+        "Funding-gap warning: the downside fully draws the revolver during a fleet-renewal year",
+        "Exports a working Excel model with about 300 live formulas, verified to match the app"
+      ],
+      stack: ["Financial modelling", "React", "TypeScript", "Excel"],
+      image: "projects/three-statement.jpg",
+      demo: "projects/three-statement/",
+      download: "projects/three-statement/three-statement-model.html",
+      code: "https://github.com/amila-nandasiri/three-statement-model"
     }
   ];
 

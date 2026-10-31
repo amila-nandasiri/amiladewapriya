@@ -51,6 +51,14 @@ jobs:
           npm run build
           mkdir -p "$GITHUB_WORKSPACE/dist/projects/ifrs16"
           cp -r dist/. "$GITHUB_WORKSPACE/dist/projects/ifrs16/"
+      - name: Build Three-Statement Financial Model
+        run: |
+          git clone --depth 1 https://github.com/amila-nandasiri/three-statement-model "$RUNNER_TEMP/three-statement"
+          cd "$RUNNER_TEMP/three-statement"
+          npm ci
+          npm run build
+          mkdir -p "$GITHUB_WORKSPACE/dist/projects/three-statement"
+          cp -r dist/. "$GITHUB_WORKSPACE/dist/projects/three-statement/"
       - name: Upload Artifacts
         uses: actions/upload-pages-artifact@v3
         with:

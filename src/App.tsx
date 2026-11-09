@@ -340,6 +340,13 @@ const Projects = () => {
       desc: "An animated landing in a crosswind, from crab and wing-low flare to upwind float first, compared with what goes wrong without correction.",
       image: "projects/crosswind.jpg",
       href: "projects/crosswind/"
+    },
+    {
+      title: "Seaplane vs Airliners",
+      tag: "3D × Aviation",
+      desc: "The Twin Otter next to the ATR 72, A320neo, 737-800, 787-9 and A350 at true scale, with cruising heights, a speed race from Malé and full specs.",
+      image: "projects/seaplane-vs-airliners.jpg",
+      href: "projects/seaplane-vs-airliners/"
     }
   ];
 

@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seaplane vs Airliners | Amila Dewapriya</title>
+<meta name="description" content="How the Twin Otter seaplane compares with the ATR 72, A320neo, 737-800, 787-9 and A350-900: a true-scale 3D line-up, cruising heights, a speed race from Malé and a full specification table. Built by Amila Dewapriya.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: a scrolling explainer. 3D size line-up first, then height, speed race, full spec table and the key differences. Each aircraft keeps one colour in every visual. Single visual world: Maldives daylight. */
+:root {
+  --ink: #0d2b33;
+  --muted: #557079;
+  --lagoon: #0e7c86;
+  --paper: #ffffff;
+  --mist: #eef6f7;
+  --line: #d3e4e7;
+  --sun: #f26b1d;
+  --warn: #c2361b;
+  --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--mist); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.55; }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
+header.top { padding: 32px 0 18px; }
+.eyebrow { font-family: var(--display); text-transform: uppercase; letter-spacing: 0.14em; font-size: 14px; font-weight: 600; color: var(--lagoon); margin: 0 0 6px; }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(34px, 5vw, 52px); line-height: 1.02; margin: 0 0 10px; text-wrap: balance; }
+.lead { font-size: 18px; max-width: 66ch; margin: 0; }
+h2 { font-family: var(--display); font-weight: 700; font-size: clamp(28px, 3.4vw, 38px); line-height: 1.05; margin: 0 0 8px; text-wrap: balance; }
+section { padding: 40px 0; border-top: 1px solid var(--line); }
+section > .wrap > p { max-width: 68ch; margin: 0 0 18px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; }
+.chip { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; background: var(--paper); border: 1px solid var(--line); border-radius: 999px; padding: 4px 11px; cursor: pointer; color: var(--ink); font-family: var(--body); }
+.chip i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.chip[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+button:focus-visible, .chip:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
+
+/* 3D stage */
+.stage { position: relative; height: 600px; border-radius: 14px; overflow: hidden; background: linear-gradient(#bfe6ef, #eaf7f8); border: 1px solid var(--line); touch-action: none; }
+.stage canvas { display: block; width: 100%; height: 100%; outline: none; }
+.labels { position: absolute; inset: 0; pointer-events: none; }
+.tag { position: absolute; transform: translate(-50%, -100%); pointer-events: auto; cursor: pointer; background: rgba(255,255,255,0.92); border: 1px solid var(--line); border-left: 4px solid; border-radius: 6px; padding: 3px 8px; font-size: 12px; white-space: nowrap; line-height: 1.25; color: var(--ink); font-family: var(--body); text-align: left; }
+.tag b { font-family: var(--display); font-size: 15px; font-weight: 600; letter-spacing: 0.02em; display: block; }
+.tag.active { background: var(--ink); color: #fff; }
+.card {
+  position: absolute; left: 14px; bottom: 60px; width: 300px; max-width: calc(100% - 28px);
+  background: rgba(255,255,255,0.95); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px;
+}
+.card .k { font-family: var(--display); text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; font-weight: 600; }
+.card h3 { font-family: var(--display); font-size: 24px; margin: 0 0 6px; line-height: 1.05; }
+.card dl { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; margin: 0 0 6px; font-size: 13px; }
+.card dt { color: var(--muted); }
+.card dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+.card p { margin: 0; font-size: 13px; color: var(--muted); }
+.stagebar { position: absolute; left: 14px; right: 14px; bottom: 12px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: flex-end; pointer-events: none; }
+.stagebar > * { pointer-events: auto; }
+.stagebar button { font: 500 13px var(--body); color: var(--ink); background: rgba(255,255,255,0.92); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; cursor: pointer; }
+.stagebar button[aria-pressed="true"] { background: var(--ink); color: #fff; border-color: var(--ink); }
+.stagebar .hint { font-size: 12px; color: var(--muted); background: rgba(255,255,255,0.8); border-radius: 999px; padding: 4px 10px; margin-right: auto; }
+.loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); }
+
+/* panels */
+.panel { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+.chart-title { font-family: var(--display); font-size: 22px; font-weight: 600; margin: 0 0 2px; }
+.chart-sub { font-size: 14px; color: var(--muted); margin: 0 0 10px; }
+svg text { font-family: var(--body); }
+.source { font-size: 12px; color: var(--muted); margin: 10px 0 0; }
+.source a { color: var(--lagoon); }
+
+/* race */
+.race-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 14px; }
+.race-controls .lbl { font-size: 13px; color: var(--muted); margin-right: 4px; }
+.dist { font: 500 14px var(--body); border: 1px solid var(--line); background: var(--paper); color: var(--ink); border-radius: 8px; padding: 7px 12px; cursor: pointer; text-align: left; line-height: 1.2; }
+.dist small { display: block; color: var(--muted); font-size: 12px; font-weight: 400; }
+.dist[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: #fff; }
+.dist[aria-pressed="true"] small { color: #cfe3e6; }
+.go { font: 600 14px var(--body); background: var(--sun); color: #fff; border: 0; border-radius: 8px; padding: 10px 18px; cursor: pointer; margin-left: auto; }
+.clock { font-family: var(--display); font-size: 20px; font-variant-numeric: tabular-nums; margin: 0 0 8px; }
+.lanes { display: grid; gap: 8px; }
+.lane { display: grid; grid-template-columns: 180px 1fr 170px; gap: 12px; align-items: center; }
+.lane .nm { font-size: 14px; font-weight: 600; line-height: 1.2; }
+.lane .nm small { display: block; font-weight: 400; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.track { position: relative; height: 34px; background: var(--mist); border-radius: 6px; overflow: hidden; }
+.track .trail { position: absolute; left: 0; top: 15px; height: 4px; border-radius: 2px; opacity: 0.45; }
+.track .finish { position: absolute; right: 0; top: 0; bottom: 0; width: 3px; background: repeating-linear-gradient(var(--ink) 0 4px, #fff 4px 8px); }
+.track .limit { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--warn); }
+.track svg.icon { position: absolute; top: 5px; width: 34px; height: 24px; margin-left: -30px; }
+.lane .res { font-size: 14px; font-variant-numeric: tabular-nums; }
+.lane .res.out { color: var(--warn); font-weight: 600; }
+
+/* table */
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); }
+table { border-collapse: collapse; width: 100%; min-width: 900px; font-size: 14px; }
+th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+thead th { font-family: var(--display); font-size: 17px; font-weight: 600; letter-spacing: 0.02em; background: var(--paper); position: sticky; top: 0; line-height: 1.15; }
+thead th small { display: block; font-family: var(--body); font-size: 12px; font-weight: 400; color: var(--muted); letter-spacing: 0; }
+thead th .bar { display: block; height: 4px; border-radius: 2px; margin-bottom: 6px; }
+tbody th { font-weight: 500; color: var(--muted); white-space: nowrap; background: #f8fbfb; }
+td { font-variant-numeric: tabular-nums; }
+td.hi { background: #e7f4f5; }
+td a { color: var(--lagoon); }
+tr:last-child th, tr:last-child td { border-bottom: 0; }
+
+/* differences */
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.diff { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+.diff h3 { font-family: var(--display); font-size: 21px; margin: 0 0 6px; line-height: 1.1; }
+.diff p { margin: 0; font-size: 14px; }
+.diff .vs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0 0; font-size: 13px; }
+.diff .vs div { background: var(--mist); border-radius: 8px; padding: 7px 9px; }
+.diff .vs b { display: block; font-family: var(--display); font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+footer { padding: 26px 0 40px; font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); }
+footer a { color: var(--lagoon); }
+footer ul { margin: 6px 0 12px; padding-left: 18px; }
+.back { display: inline-block; font-size: 14px; color: var(--lagoon); text-decoration: none; margin: 0 0 14px; }
+.back:hover { text-decoration: underline; }
+.more { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 0 0 14px; }
+
+@media (max-width: 900px) {
+  .grid3 { grid-template-columns: 1fr; }
+  .stage { height: 520px; }
+  .lane { grid-template-columns: 110px 1fr; }
+  .lane .res { grid-column: 2; margin-top: -4px; }
+  .go { margin-left: 0; }
+  .card { bottom: 96px; }
+}
+@media (max-width: 600px) {
+  /* compact card so the 3D line-up stays visible on phones */
+  .card { width: auto; right: 14px; padding: 8px 12px; bottom: 92px; }
+  .card h3 { font-size: 19px; margin: 0 0 2px; }
+  .card dl dt:nth-of-type(n+3), .card dl dd:nth-of-type(n+3), .card p { display: none; }
+  .stagebar .hint { display: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="back" href="../../#projects">← Back to portfolio</a>
+    <p class="eyebrow">Maldives seaplane vs commercial airliners</p>
+    <h1>How a Twin Otter seaplane compares with the airliners you fly</h1>
+    <p class="lead">The Twin Otter on floats that carries visitors to Maldives resorts is small, slow and low, and it lands on water. Here it is next to five well-known aircraft: the ATR 72 turboprop, the Airbus A320neo, the Boeing 737-800, the Boeing 787-9 and the Airbus A350-900.</p>
+    <div class="chips" id="legend" role="group" aria-label="Aircraft"></div>
+  </div>
+</header>
+
+<main>
+  <section style="border-top:0;padding-top:8px">
+    <div class="wrap">
+      <div class="stage" id="stage" aria-label="3D line-up of six aircraft at true scale">
+        <div class="loading" id="loading">Loading the 3D line-up…</div>
+        <div class="labels" id="labels"></div>
+        <div class="card" id="card" aria-live="polite"></div>
+        <div class="stagebar">
+          <span class="hint">True scale · drag to turn · scroll to zoom · click an aircraft</span>
+          <button type="button" data-view="front" aria-pressed="true">Front</button>
+          <button type="button" data-view="above" aria-pressed="false">From above</button>
+          <button type="button" data-view="side" aria-pressed="false">Side</button>
+        </div>
+      </div>
+      <p class="source">Simplified 3D shapes built to each aircraft's real length and wingspan (sources in the table and at the bottom of the page). Generic paint schemes; no airline liveries.</p>
+    </div>
+  </section>
+
+  <section id="height">
+    <div class="wrap">
+      <h2>How high they fly</h2>
+      <p>A seaplane on a resort transfer stays below about 5,000 ft. Its cabin is not pressurised, the trips are short, and the pilots fly by sight. Jets climb above Mount Everest, where thin air means less drag and lower fuel burn. Their cabins are pressurised: a 787's cabin is kept at the equivalent of about 6,000 ft.</p>
+      <div class="panel">
+        <p class="chart-title" id="hTitle"></p>
+        <p class="chart-sub">Coloured bar = typical cruising height · dashed line = maximum certified altitude</p>
+        <div id="heightChart"></div>
+        <p class="source">Sources: Maldives transfer heights from operator and passenger reports; airliner figures from airline and manufacturer data (see list at the bottom). The A350 typical band is approximate.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="speed">
+    <div class="wrap">
+      <h2>How fast they fly: a race from Malé</h2>
+      <p>Pick a destination and start the race. Each aircraft flies at its normal cruise speed. If a trip is longer than an aircraft's range, it stops where its fuel would run out.</p>
+      <div class="panel">
+        <div class="race-controls" role="group" aria-label="Destination">
+          <span class="lbl">From Malé to:</span>
+          <button type="button" class="dist" data-km="116" aria-pressed="true">Baa Atoll resort<small>116 km</small></button>
+          <button type="button" class="dist" data-km="778" aria-pressed="false">Colombo<small>778 km</small></button>
+          <button type="button" class="dist" data-km="3041" aria-pressed="false">Dubai<small>3,041 km</small></button>
+          <button type="button" class="dist" data-km="8538" aria-pressed="false">London<small>8,538 km</small></button>
+          <button type="button" class="go" id="go">Start the race</button>
+        </div>
+        <p class="clock" id="clock">Flight time: 0 h 00 min</p>
+        <div class="lanes" id="lanes"></div>
+        <p class="source">Cruise speed only: real trips also include taxi, climb and descent. Distances are great-circle (straight-line) distances from Velana International Airport, calculated from airport coordinates. Ranges from the sources in the table. Twin Otter range shown for the wheeled version; on floats it is shorter.</p>
+      </div>
+      <div class="panel" style="margin-top:14px">
+        <p class="chart-title" id="sTitle"></p>
+        <p class="chart-sub">Typical cruise speed, km/h</p>
+        <div id="speedChart"></div>
+        <p class="source">Sources: manufacturer and airline data for each aircraft (linked in the table below and the list at the bottom). Twin Otter: typical cruise from operator specs; float versions fly a little slower.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="specs">
+    <div class="wrap">
+      <h2>Full comparison</h2>
+      <p>Seats, weights and ranges vary with each airline's layout and load. These are typical published figures.</p>
+      <div class="tablewrap"><table id="specTable"></table></div>
+    </div>
+  </section>
+
+  <section id="differences">
+    <div class="wrap">
+      <h2>The big differences</h2>
+      <div class="grid3" id="diffs"></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="more"><strong>More seaplane pages:</strong> <a href="../twin-otter/">Explore the Twin Otter in 3D</a> <a href="../crosswind/">How a seaplane lands in a crosswind</a></div>
+    <strong>Sources</strong>
+    <ul>
+      <li>Twin Otter: <a href="https://dehavilland.com/wp-content/uploads/2024/03/DHC-6-Twin-Otter-Classic-300-G-v2.pdf">De Havilland Classic 300-G spec</a>, <a href="https://www.globalair.com/aircraft-specifications/de-havilland/otter-dhc-6-300-specifications/699">GlobalAir DHC-6-300</a></li>
+      <li>ATR 72-600: <a href="https://www.atr-aircraft.com/wp-content/uploads/2020/07/Factsheets_-_ATR_72-600.pdf">ATR factsheet</a>, <a href="https://aerocorner.com/aircraft/atr-72-600/">AeroCorner</a></li>
+      <li>A320neo: <a href="https://lufthansacityline.com/en/fleet-route-network/airbus-a320neo.html">Lufthansa CityLine</a>, <a href="https://aerocorner.com/aircraft/airbus-a320neo/">AeroCorner</a>, <a href="https://jettly.com/post/a320-cruise-speed">cruise data</a></li>
+      <li>737-800: <a href="https://aerocorner.com/aircraft/b738">AeroCorner</a>, <a href="https://planefyi.com/es/aircraft/boeing-737-800/">PlaneFYI</a>, <a href="https://blackjet.com/post/cruising-altitude-of-a-737">cruise altitude</a></li>
+      <li>787-9: <a href="https://qantas.com/ar/en/qantas-experience/onboard/seat-maps/boeing-787-9.html">Qantas</a>, <a href="https://planefyi.com/th/aircraft/boeing-787-9/">PlaneFYI</a></li>
+      <li>Seaplane flight rules (daylight VFR in Malé airspace): <a href="https://www.icao.int/sites/default/files/APAC/Meetings/2023/2023%20AP%20AA%20WG%205/4-Information%20Papers/IP05-sea-plane-operation-presentation.pdf">Maldives CAA paper to ICAO (2023)</a>; transfer heights: <a href="https://www.luxurytravelmagazine.com/news-articles/four-seasons-resort-maldives-unveils-custom-aircraft">Four Seasons</a>, <a href="https://www.jetphotos.com/photo/7804262">JetPhotos</a></li>
+      <li>A350-900: <a href="https://skybrary.aero/node/17557">SKYbrary</a>, <a href="https://planefyi.com/ko/aircraft/airbus-a350-900/">PlaneFYI</a>, <a href="https://singaporeair.com/en_UK/au/flying-withus/our-story/our-fleet/airbus-a350-900">Singapore Airlines</a></li>
+    </ul>
+    Educational comparison with rounded figures. Not affiliated with any airline, operator or manufacturer.
+  </div>
+</footer>
+
+<!-- three.js r128 (MIT), shared with the Twin Otter explorer -->
+<script src="../twin-otter/vendor/three.min.js"></script>
+<script src="../twin-otter/vendor/OrbitControls.js"></script>
+<script>
+(function () {
+  "use strict";
+  var el = function (id) { return document.getElementById(id); };
+  var NS = "http://www.w3.org/2000/svg";
+  function fmt(n) { return Math.round(n).toLocaleString("en-US"); }
+
+  /* ---------- Data (one colour per aircraft, used in every visual) ---------- */
+  var AC = [
+    { id: "dhc6", name: "DHC-6 Twin Otter", short: "Twin Otter", kind: "Seaplane", color: "#0e7c86",
+      len: 15.8, span: 19.8, mtow: 5670, seats: "Up to 19", seatsTyp: 19, kmh: 270, kt: 145, mach: "—",
+      lo: 1500, hi: 5000, ceil: 25000, range: 1400, engines: "2 × Pratt & Whitney PT6A turboprop", from: "Water (lagoon)", press: "No",
+      rules: "Visual (VFR), daylight only", note: "Lands right next to the resort on the lagoon.",
+      src: [["De Havilland", "https://dehavilland.com/wp-content/uploads/2024/03/DHC-6-Twin-Otter-Classic-300-G-v2.pdf"], ["GlobalAir", "https://www.globalair.com/aircraft-specifications/de-havilland/otter-dhc-6-300-specifications/699"], ["Maldives CAA", "https://www.icao.int/sites/default/files/APAC/Meetings/2023/2023%20AP%20AA%20WG%205/4-Information%20Papers/IP05-sea-plane-operation-presentation.pdf"]] },
+    { id: "atr", name: "ATR 72-600", short: "ATR 72", kind: "Regional turboprop", color: "#7a5cc7",
+      len: 27.17, span: 27.05, mtow: 23000, seats: "70; up to 78", seatsTyp: 70, kmh: 510, kt: 275, mach: "—",
+      lo: 17000, hi: 25000, ceil: 25000, range: 1528, engines: "2 × Pratt & Whitney PW127M turboprop", from: "Runway (about 1.3 km)", press: "Yes", cabinW: 2.57,
+      rules: "Instrument (IFR), day and night", note: "Common on Maldives domestic routes to island airports.",
+      src: [["ATR factsheet", "https://www.atr-aircraft.com/wp-content/uploads/2020/07/Factsheets_-_ATR_72-600.pdf"], ["AeroCorner", "https://aerocorner.com/aircraft/atr-72-600/"]] },
+    { id: "a320", name: "Airbus A320neo", short: "A320neo", kind: "Narrowbody jet", color: "#2f6fd0",
+      len: 37.57, span: 35.8, mtow: 79000, seats: "150–180; up to 194", seatsTyp: 165, kmh: 833, kt: 450, mach: "0.78",
+      lo: 33000, hi: 37000, ceil: 39800, range: 6300, engines: "2 × CFM LEAP-1A or PW1100G turbofan", from: "Runway (about 2 km)", press: "Yes", cabinW: 3.70,
+      rules: "Instrument (IFR), day and night", note: "The best-selling family of short and medium-haul jets.",
+      src: [["Lufthansa CityLine", "https://lufthansacityline.com/en/fleet-route-network/airbus-a320neo.html"], ["AeroCorner", "https://aerocorner.com/aircraft/airbus-a320neo/"], ["Jettly", "https://jettly.com/post/a320-cruise-speed"]] },
+    { id: "b738", name: "Boeing 737-800", short: "737-800", kind: "Narrowbody jet", color: "#d4772c",
+      len: 39.47, span: 35.79, mtow: 79000, seats: "162; up to 189", seatsTyp: 162, kmh: 842, kt: 455, mach: "0.785",
+      lo: 35000, hi: 39000, ceil: 41000, range: 5400, engines: "2 × CFM56-7B turbofan", from: "Runway (about 2.3 km)", press: "Yes", cabinW: 3.54,
+      rules: "Instrument (IFR), day and night", note: "The best-selling 737 Next Generation model.",
+      src: [["AeroCorner", "https://aerocorner.com/aircraft/b738"], ["PlaneFYI", "https://planefyi.com/es/aircraft/boeing-737-800/"], ["BlackJet", "https://blackjet.com/post/cruising-altitude-of-a-737"]] },
+    { id: "b789", name: "Boeing 787-9", short: "787-9", kind: "Widebody jet", color: "#c2415d",
+      len: 62.81, span: 60.12, mtow: 254000, seats: "about 290; up to 420", seatsTyp: 290, kmh: 903, kt: 488, mach: "0.85",
+      lo: 35000, hi: 43000, ceil: 43100, range: 14140, engines: "2 × GEnx-1B or Trent 1000 turbofan", from: "Runway (about 2.8 km)", press: "Yes", cabinW: 5.49,
+      rules: "Instrument (IFR), day and night", note: "Long-haul Dreamliner; more than half its structure is composite.",
+      src: [["Qantas", "https://qantas.com/ar/en/qantas-experience/onboard/seat-maps/boeing-787-9.html"], ["PlaneFYI", "https://planefyi.com/th/aircraft/boeing-787-9/"]] },
+    { id: "a359", name: "Airbus A350-900", short: "A350-900", kind: "Widebody jet", color: "#3d8b5a",
+      len: 66.8, span: 64.75, mtow: 280000, seats: "about 300; up to 440", seatsTyp: 300, kmh: 903, kt: 488, mach: "0.85",
+      lo: 35000, hi: 41000, ceil: 43100, range: 15000, engines: "2 × Rolls-Royce Trent XWB turbofan", from: "Runway (long-haul)", press: "Yes", cabinW: 5.61,
+      rules: "Instrument (IFR), day and night", note: "The largest aircraft here: about 4 times the Twin Otter's length.",
+      src: [["SKYbrary", "https://skybrary.aero/node/17557"], ["PlaneFYI", "https://planefyi.com/ko/aircraft/airbus-a350-900/"], ["Singapore Airlines", "https://singaporeair.com/en_UK/au/flying-withus/our-story/our-fleet/airbus-a350-900"]] }
+  ];
+  var SEA = AC[0];
+
+  /* ---------- Legend chips ---------- */
+  var legend = el("legend");
+  AC.forEach(function (a, i) {
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "chip"; b.id = "chip-" + a.id;
+    b.innerHTML = '<i style="background:' + a.color + '"></i>';
+    b.appendChild(document.createTextNode(a.name));
+    b.addEventListener("click", function () { selectAc(i, true); });
+    legend.appendChild(b);
+  });
+
+  /* ---------- Info card ---------- */
+  var selected = 0;
+  function renderCard(i) {
+    var a = AC[i];
+    var c = el("card");
+    var times = i === 0 ? "" :
+      "<p>" + (a.len / SEA.len).toFixed(1) + "× the Twin Otter's length, " + Math.round(a.mtow / SEA.mtow) + "× its maximum weight, about " + Math.round(a.seatsTyp / SEA.seatsTyp) + "× the seats.</p>";
+    c.innerHTML = '<div class="k" style="color:' + a.color + '"></div><h3></h3><dl>' +
+      "<dt>Length</dt><dd>" + a.len.toFixed(1) + " m</dd>" +
+      "<dt>Wingspan</dt><dd>" + a.span.toFixed(1) + " m</dd>" +
+      "<dt>Seats</dt><dd>" + a.seats + "</dd>" +
+      "<dt>Cruise</dt><dd>" + fmt(a.kmh) + " km/h (" + a.kt + " kt)</dd>" +
+      "<dt>Cruise height</dt><dd>" + fmt(a.lo) + "–" + fmt(a.hi) + " ft</dd></dl>" +
+      (times || "<p>" + a.note + "</p>");
+    c.querySelector(".k").textContent = a.kind;
+    c.querySelector("h3").textContent = a.name;
+    AC.forEach(function (o, k) { el("chip-" + o.id).setAttribute("aria-pressed", k === i ? "true" : "false"); });
+  }
+  renderCard(0);
+
+  /* ---------- Height chart (SVG drawn from the data) ---------- */
+  (function heightChart() {
+    var W = 900, H = 520, left = 64, right = 150, y0 = 24, bottom = 74;
+    var maxFt = 46000, plotH = H - y0 - bottom, plotW = W - left - right;
+    var y = function (ft) { return y0 + plotH - ft / maxFt * plotH; };
+    var colW = plotW / AC.length;
+    var lowestJet = Math.min.apply(null, AC.slice(2).map(function (a) { return a.lo; }));
+    el("hTitle").textContent = "Jets cruise at least " + Math.floor(lowestJet / SEA.hi) + " times higher than a seaplane";
+    var s = '<svg viewBox="0 0 ' + W + " " + H + '" width="100%" role="img" aria-label="Typical cruising height of six aircraft compared with Mount Everest">';
+    for (var ft = 0; ft <= 45000; ft += 5000) {
+      s += '<line x1="' + left + '" x2="' + (W - right + 10) + '" y1="' + y(ft) + '" y2="' + y(ft) + '" stroke="#d3e4e7" stroke-width="1"/>';
+      s += '<text x="' + (left - 8) + '" y="' + (y(ft) + 4) + '" text-anchor="end" font-size="12" fill="#557079">' + (ft === 0 ? "Sea level" : fmt(ft)) + "</text>";
+    }
+    s += '<text x="' + left + '" y="14" font-size="12" fill="#557079">Feet</text>';
+    var ev = 29032;
+    s += '<line x1="' + left + '" x2="' + (W - right + 10) + '" y1="' + y(ev) + '" y2="' + y(ev) + '" stroke="#0d2b33" stroke-width="1.2" stroke-dasharray="2 4"/>';
+    s += '<text x="' + (W - right + 16) + '" y="' + (y(ev) - 2) + '" font-size="12" fill="#0d2b33">Mount Everest</text>';
+    s += '<text x="' + (W - right + 16) + '" y="' + (y(ev) + 13) + '" font-size="12" fill="#557079">29,032 ft</text>';
+    AC.forEach(function (a, i) {
+      var cx = left + colW * i + colW / 2, bw = Math.min(54, colW * 0.5);
+      s += '<g><title>' + a.name + ": cruises at " + fmt(a.lo) + "–" + fmt(a.hi) + " ft, maximum " + fmt(a.ceil) + " ft</title>";
+      s += '<line x1="' + (cx - bw / 2 - 6) + '" x2="' + (cx + bw / 2 + 6) + '" y1="' + y(a.ceil) + '" y2="' + y(a.ceil) + '" stroke="' + a.color + '" stroke-width="2" stroke-dasharray="5 3"/>';
+      s += '<text x="' + cx + '" y="' + (y(a.ceil) - 6) + '" text-anchor="middle" font-size="11" fill="#557079">max ' + fmt(a.ceil) + "</text>";
+      var top = y(a.hi), h = Math.max(4, y(a.lo) - y(a.hi));
+      s += '<rect x="' + (cx - bw / 2) + '" y="' + top + '" width="' + bw + '" height="' + h + '" rx="4" fill="' + a.color + '"/>';
+      var kft = function (v) { return (v / 1000).toLocaleString("en-US", { maximumFractionDigits: 1 }); };
+      var lbl = kft(a.lo) + "–" + kft(a.hi) + "k ft";
+      if (h > 22) s += '<text x="' + cx + '" y="' + (top + h / 2 + 4) + '" text-anchor="middle" font-size="12" font-weight="600" fill="#fff">' + lbl + "</text>";
+      else s += '<text x="' + cx + '" y="' + (top - 8) + '" text-anchor="middle" font-size="12" font-weight="600" fill="' + a.color + '">' + lbl + "</text>";
+      s += '<text x="' + cx + '" y="' + (H - bottom + 22) + '" text-anchor="middle" font-size="13" font-weight="600" fill="#0d2b33">' + a.short + "</text>";
+      s += '<text x="' + cx + '" y="' + (H - bottom + 40) + '" text-anchor="middle" font-size="12" fill="' + (a.press === "No" ? "#c2361b" : "#557079") + '">' + (a.press === "No" ? "unpressurised" : "pressurised") + "</text>";
+      s += "</g>";
+    });
+    s += "</svg>";
+    el("heightChart").innerHTML = s;
+  })();
+
+  /* ---------- Speed bar chart ---------- */
+  (function speedChart() {
+    var W = 900, rowH = 40, left = 150, right = 160, y0 = 6;
+    var H = y0 + AC.length * rowH + 10, maxV = 1000, plotW = W - left - right;
+    var jetAvg = AC.slice(2).reduce(function (s, a) { return s + a.kmh; }, 0) / 4;
+    el("sTitle").textContent = "Airliners fly about " + (jetAvg / SEA.kmh).toFixed(1) + " times faster than the Twin Otter seaplane";
+    var s = '<svg viewBox="0 0 ' + W + " " + H + '" width="100%" role="img" aria-label="Cruise speed of six aircraft">';
+    AC.forEach(function (a, i) {
+      var yy = y0 + i * rowH, w = a.kmh / maxV * plotW;
+      s += '<text x="' + (left - 12) + '" y="' + (yy + 24) + '" text-anchor="end" font-size="14" font-weight="600" fill="#0d2b33">' + a.short + "</text>";
+      s += '<rect x="' + left + '" y="' + (yy + 8) + '" width="' + w + '" height="24" rx="4" fill="' + a.color + '"><title>' + a.name + ": " + fmt(a.kmh) + " km/h, " + a.kt + " kt" + (a.mach !== "—" ? ", Mach " + a.mach : "") + "</title></rect>";
+      s += '<text x="' + (left + w + 8) + '" y="' + (yy + 25) + '" font-size="13" fill="#0d2b33">' + fmt(a.kmh) + " km/h · " + a.kt + " kt" + (a.mach !== "—" ? " · Mach " + a.mach : "") + "</text>";
+    });
+    s += "</svg>";
+    el("speedChart").innerHTML = s;
+  })();
+
+  /* ---------- Speed race ---------- */
+  var lanesBox = el("lanes"), raceKm = 116, raceAnim = null;
+  function planeIcon(color) {
+    return '<svg class="icon" viewBox="0 0 34 24" aria-hidden="true"><path d="M33 12 L22 10 L14 2 L11 2 L15 10 L5 9 L2 4 L0 4 L1 12 L0 20 L2 20 L5 15 L15 14 L11 22 L14 22 L22 14 Z" fill="' + color + '"/></svg>';
+  }
+  function hm(h) { var m = Math.round(h * 60); return Math.floor(m / 60) + " h " + String(m % 60).padStart(2, "0") + " min"; }
+  function buildLanes() {
+    lanesBox.innerHTML = "";
+    AC.forEach(function (a) {
+      var row = document.createElement("div");
+      row.className = "lane";
+      row.innerHTML = '<div class="nm"></div><div class="track"><div class="trail" style="background:' + a.color + ';width:0"></div><div class="finish"></div>' + planeIcon(a.color) + '</div><div class="res"></div>';
+      row.querySelector(".nm").textContent = a.short;
+      var sm = document.createElement("small"); sm.textContent = fmt(a.kmh) + " km/h · range " + fmt(a.range) + " km";
+      row.querySelector(".nm").appendChild(sm);
+      var reach = Math.min(1, a.range / raceKm);
+      if (reach < 1) {
+        var lim = document.createElement("div"); lim.className = "limit"; lim.style.left = (reach * 100) + "%";
+        lim.title = "Range limit"; row.querySelector(".track").appendChild(lim);
+      }
+      a.row = row; a.reach = reach;
+      setLane(a, 0);
+      lanesBox.appendChild(row);
+    });
+  }
+  function setLane(a, frac) {
+    var icon = a.row.querySelector(".icon");
+    icon.style.left = "calc(" + (frac * 100) + "% + " + (30 - frac * 30) + "px)";
+    a.row.querySelector(".trail").style.width = (frac * 100) + "%";
+  }
+  function race() {
+    if (raceAnim) cancelAnimationFrame(raceAnim);
+    buildLanes();
+    var reachable = AC.filter(function (a) { return a.reach >= 1; });
+    var slowest = Math.max.apply(null, (reachable.length ? reachable : AC).map(function (a) { return Math.min(raceKm, a.range) / a.kmh; }));
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var dur = reduce ? 1 : 7000, t0 = performance.now();
+    AC.forEach(function (a) { a.row.querySelector(".res").textContent = ""; a.done = false; });
+    function step(now) {
+      var k = Math.min((now - t0) / dur, 1), hours = k * slowest;
+      el("clock").textContent = "Flight time: " + hm(hours);
+      AC.forEach(function (a) {
+        var dist = Math.min(a.kmh * hours, raceKm, a.range);
+        setLane(a, dist / raceKm);
+        var res = a.row.querySelector(".res");
+        if (!a.done && dist >= Math.min(raceKm, a.range) - 1e-6) {
+          a.done = true;
+          if (a.reach >= 1) { res.className = "res"; res.textContent = "Arrives in " + hm(raceKm / a.kmh); }
+          else { res.className = "res out"; res.textContent = "Out of range at " + fmt(a.range) + " km"; }
+        }
+      });
+      if (k < 1) raceAnim = requestAnimationFrame(step);
+      else AC.forEach(function (a) {
+        if (!a.done) { a.done = true; var r = a.row.querySelector(".res"); if (a.reach >= 1) r.textContent = "Arrives in " + hm(raceKm / a.kmh); else { r.className = "res out"; r.textContent = "Out of range at " + fmt(a.range) + " km"; } }
+      });
+    }
+    raceAnim = requestAnimationFrame(step);
+  }
+  Array.prototype.forEach.call(document.querySelectorAll(".dist"), function (b) {
+    b.addEventListener("click", function () {
+      raceKm = +b.getAttribute("data-km");
+      Array.prototype.forEach.call(document.querySelectorAll(".dist"), function (o) { o.setAttribute("aria-pressed", o === b ? "true" : "false"); });
+      race();
+    });
+  });
+  el("go").addEventListener("click", race);
+  buildLanes();
+  // show the finished Baa Atoll result at rest
+  (function () {
+    var slow = raceKm / SEA.kmh;
+    el("clock").textContent = "Flight time: " + hm(slow);
+    AC.forEach(function (a) {
+      setLane(a, 1);
+      var r = a.row.querySelector(".res"); r.textContent = "Arrives in " + hm(raceKm / a.kmh);
+    });
+  })();
+
+  /* ---------- Spec table ---------- */
+  (function table() {
+    var rows = [
+      ["Type", function (a) { return a.kind; }],
+      ["Takes off from", function (a) { return a.from; }],
+      ["Length", function (a) { return a.len.toFixed(1) + " m"; }],
+      ["Wingspan", function (a) { return a.span.toFixed(1) + " m"; }],
+      ["Max take-off weight", function (a) { return fmt(a.mtow) + " kg"; }],
+      ["Seats", function (a) { return a.seats; }],
+      ["Engines", function (a) { return a.engines; }],
+      ["Cruise speed", function (a) { return fmt(a.kmh) + " km/h (" + a.kt + " kt)"; }],
+      ["Mach number", function (a) { return a.mach; }],
+      ["Typical cruise height", function (a) { return fmt(a.lo) + "–" + fmt(a.hi) + " ft"; }],
+      ["Max altitude", function (a) { return fmt(a.ceil) + " ft"; }],
+      ["Pressurised cabin", function (a) { return a.press; }],
+      ["Range", function (a) { return "about " + fmt(a.range) + " km"; }],
+      ["Flight rules", function (a) { return a.rules; }],
+      ["Pilots", function () { return "2"; }],
+      ["Sources", function (a) { return a.src.map(function (x) { return '<a href="' + x[1] + '">' + x[0] + "</a>"; }).join(", "); }]
+    ];
+    var t = el("specTable");
+    var head = "<thead><tr><th scope='col'><span class='bar' style='background:transparent'></span>Aircraft</th>";
+    AC.forEach(function (a) { head += "<th scope='col'><span class='bar' style='background:" + a.color + "'></span>" + a.name + "<small>" + a.kind + "</small></th>"; });
+    head += "</tr></thead><tbody>";
+    rows.forEach(function (r) {
+      head += "<tr><th scope='row'>" + r[0] + "</th>";
+      AC.forEach(function (a, i) { head += "<td" + (i === 0 ? " class='hi'" : "") + ">" + r[1](a) + "</td>"; });
+      head += "</tr>";
+    });
+    t.innerHTML = head + "</tbody>";
+  })();
+
+  /* ---------- Differences ---------- */
+  (function diffs() {
+    var big = AC[5];
+    var cards = [
+      ["Where they take off and land", "The seaplane needs no airport at all: any calm, clear stretch of lagoon will do, and it parks at a floating platform next to the resort. Airliners need paved runways of 1.3 km (ATR 72) to more than 2.5 km (long-haul jets).", "Lagoon water", "Paved runway"],
+      ["Propellers vs jet engines", "Turboprops like the Twin Otter and the ATR turn propellers, which are efficient at low speed and low height. Jet airliners use turbofans that are most efficient fast and high, at around 80–85% of the speed of sound.", "2 propellers", "2 turbofans"],
+      ["Height and pressurisation", "With no pressurisation, the Twin Otter stays a few thousand feet up, which is why passengers get that famous view of the reefs. Jets pressurise the cabin so they can cruise at 33,000–43,000 ft.", "Below 5,000 ft", "33,000–43,000 ft"],
+      ["Day only vs any time", "Seaplanes fly by sight (VFR), and night VFR is not allowed in Malé airspace, so the last transfers leave in the afternoon. Airliners fly by instruments (IFR) and land on lit runways day and night.", "Daylight", "24 hours"],
+      ["Size and seats", "One " + big.short + " carries about " + Math.round(big.seatsTyp / SEA.seatsTyp) + " times as many passengers as a Twin Otter and weighs about " + Math.round(big.mtow / SEA.mtow) + " times as much at take-off.", SEA.seatsTyp + " seats", "about " + big.seatsTyp + " seats (" + big.short + ")"],
+      ["Speed and trip length", "On a 116 km hop to Baa Atoll the jets would save only about 17 minutes over the seaplane, and they could not land there anyway. On long trips speed and range decide everything: only the widebodies reach London non-stop.", fmt(SEA.kmh) + " km/h", "830–903 km/h"]
+    ];
+    var box = el("diffs");
+    cards.forEach(function (c) {
+      var d = document.createElement("article");
+      d.className = "diff";
+      d.innerHTML = "<h3></h3><p></p><div class='vs'><div><b>Seaplane</b><span></span></div><div><b>Airliners</b><span></span></div></div>";
+      d.querySelector("h3").textContent = c[0];
+      d.querySelector("p").textContent = c[1];
+      var sp = d.querySelectorAll(".vs span"); sp[0].textContent = c[2]; sp[1].textContent = c[3];
+      box.appendChild(d);
+    });
+  })();
+
+  /* ---------- 3D line-up ---------- */
+  var selectAc = function (i) { selected = i; renderCard(i); };
+  if (typeof THREE === "undefined" || !THREE.OrbitControls) {
+    el("loading").textContent = "The 3D line-up could not load. Check your connection and refresh.";
+    return;
+  }
+  var stage = el("stage");
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  stage.insertBefore(renderer.domElement, stage.firstChild);
+  el("loading").remove();
+
+  var scene = new THREE.Scene();
+  (function () {
+    var c = document.createElement("canvas"); c.width = 2; c.height = 256;
+    var g = c.getContext("2d"), grd = g.createLinearGradient(0, 0, 0, 256);
+    grd.addColorStop(0, "#5fb8d6"); grd.addColorStop(0.55, "#bfe6ef"); grd.addColorStop(1, "#eaf7f8");
+    g.fillStyle = grd; g.fillRect(0, 0, 2, 256);
+    var tex = new THREE.CanvasTexture(c); tex.encoding = THREE.sRGBEncoding; scene.background = tex;
+  })();
+  scene.fog = new THREE.Fog(0xd6eff3, 500, 1400);
+  var camera = new THREE.PerspectiveCamera(36, 1, 0.5, 3000);
+  var controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true; controls.dampingFactor = 0.08;
+  controls.minDistance = 20; controls.maxDistance = 700; controls.maxPolarAngle = Math.PI * 0.49;
+  controls.screenSpacePanning = false;
+
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8fb7ba, 0.8));
+  var sunL = new THREE.DirectionalLight(0xfff3e0, 0.95); sunL.position.set(120, 200, 80); scene.add(sunL);
+  var fillL = new THREE.DirectionalLight(0xcfeffa, 0.35); fillL.position.set(-100, 60, -120); scene.add(fillL);
+
+  function M(color, opts) {
+    var o = { color: color, roughness: 0.5, metalness: 0.05 };
+    for (var k in opts) o[k] = opts[k];
+    return new THREE.MeshStandardMaterial(o);
+  }
+  var white = M(0xf5f7f8, { roughness: 0.35 }), glass = M(0x16323a, { roughness: 0.1, metalness: 0.4 });
+  var dark = M(0x2b3236, { roughness: 0.6 }), grey = M(0x9aa6ab, { roughness: 0.5, metalness: 0.3 });
+  var alu = M(0xc7d0d4, { roughness: 0.35, metalness: 0.55 }), nacelleMat = M(0xdfe5e8, { roughness: 0.35, metalness: 0.2 });
+  var tipYellow = M(0xf2c01d, { roughness: 0.5 });
+
+  function extrude(shape, depth, bevel, seg) {
+    var g = new THREE.ExtrudeGeometry(shape, { depth: depth, bevelEnabled: bevel > 0, bevelThickness: bevel, bevelSize: bevel, bevelSegments: seg || 3, curveSegments: 16 });
+    g.translate(0, 0, -depth / 2);
+    return g;
+  }
+  function rod(a, b, r, mat) {
+    var A = new THREE.Vector3(a[0], a[1], a[2]), B = new THREE.Vector3(b[0], b[1], b[2]);
+    var dir = new THREE.Vector3().subVectors(B, A), len = dir.length();
+    var m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, 10), mat);
+    m.position.copy(A).addScaledVector(dir, 0.5);
+    m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+    return m;
+  }
+  function box(w, h, d, mat, x, y, z) { var m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); return m; }
+
+  /* Twin Otter on floats (same model as the explorer page). Nose at x = +7.4. */
+  function buildTwinOtter(color) {
+    var g = new THREE.Group();
+    var accent = M(color, { roughness: 0.4 });
+    var fus = new THREE.Group(); fus.position.y = 1.6; g.add(fus);
+    var fs = new THREE.Shape();
+    fs.moveTo(-7.6, 1.1); fs.lineTo(-7.6, 1.55); fs.lineTo(-2.0, 1.75); fs.lineTo(4.9, 1.75);
+    fs.quadraticCurveTo(5.6, 1.75, 6.4, 1.2); fs.quadraticCurveTo(7.1, 0.85, 7.2, 0.55);
+    fs.quadraticCurveTo(7.2, 0.1, 6.4, 0.05); fs.lineTo(-2.4, 0.05); fs.lineTo(-7.6, 1.1);
+    fus.add(new THREE.Mesh(extrude(fs, 1.25, 0.2, 5), white));
+    var ws = box(1.1, 0.04, 1.15, glass, 5.69, 1.8, 0); ws.rotation.z = -0.351; fus.add(ws);
+    [-1, 1].forEach(function (s) {
+      for (var i = 0; i < 7; i++) fus.add(box(0.46, 0.4, 0.02, glass, -1.9 + i * 0.95, 1.27, s * 0.835));
+      fus.add(box(10.9, 0.12, 0.02, accent, 0.85, 0.6, s * 0.836));
+    });
+    var af = new THREE.Shape();
+    af.moveTo(-1.0, 0.02); af.quadraticCurveTo(-0.2, 0.2, 0.7, 0.16); af.quadraticCurveTo(1.0, 0.12, 1.0, 0.0);
+    af.quadraticCurveTo(0.9, -0.08, 0.5, -0.08); af.lineTo(-1.0, -0.01);
+    var wing = new THREE.Mesh(extrude(af, 19.8, 0.03, 2), white); wing.position.set(2.6, 3.63, 0); g.add(wing);
+    [-1, 1].forEach(function (s) {
+      g.add(rod([2.6, 2.05, s * 0.83], [2.6, 3.58, s * 4.6], 0.05, grey));
+      var z = s * 2.9;
+      var nac = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.3, 3.3, 20), white); nac.rotation.z = Math.PI / 2; nac.position.set(4.0, 3.48, z); g.add(nac);
+      var prop = new THREE.Group(); prop.position.set(5.78, 3.48, z); g.add(prop);
+      var sp = new THREE.Mesh(new THREE.ConeGeometry(0.24, 0.55, 20), white); sp.rotation.z = -Math.PI / 2; sp.position.x = 0.22; prop.add(sp);
+      for (var i = 0; i < 3; i++) { var bl = new THREE.Group(); bl.rotation.x = i * 2.094 + 0.4; var b = box(0.05, 1.12, 0.17, dark, 0.05, 0.68, 0); bl.add(b); bl.add(box(0.052, 0.14, 0.17, tipYellow, 0.05, 1.22, 0)); prop.add(bl); }
+    });
+    var fin = new THREE.Shape();
+    fin.moveTo(-0.2, 0); fin.lineTo(2.6, 0); fin.lineTo(0.95, 2.5); fin.lineTo(0.0, 2.5); fin.lineTo(-0.2, 0.4); fin.lineTo(-0.2, 0);
+    var fm = new THREE.Mesh(extrude(fin, 0.14, 0.04, 2), accent); fm.position.set(-7.75, 3.2, 0); g.add(fm);
+    g.add(box(1.9, 0.1, 6.3, white, -7.0, 3.42, 0));
+    var fl = new THREE.Shape();
+    fl.moveTo(6.2, 0.62); fl.quadraticCurveTo(6.35, 0.22, 5.2, 0.05); fl.lineTo(1.0, 0.0); fl.lineTo(1.0, 0.13);
+    fl.lineTo(-5.4, 0.45); fl.lineTo(-5.6, 0.62); fl.lineTo(6.2, 0.62);
+    var fgeo = extrude(fl, 0.5, 0.14, 4);
+    [-1, 1].forEach(function (s) {
+      var z = s * 1.55;
+      var f = new THREE.Mesh(fgeo, alu); f.position.set(0, -0.05, z); g.add(f);
+      g.add(rod([3.6, 0.7, z], [3.6, 1.55, s * 0.55], 0.06, grey));
+      g.add(rod([0.3, 0.72, z], [0.3, 1.55, s * 0.55], 0.06, grey));
+    });
+    g.userData.nose = 7.4; g.userData.top = 5.9;
+    return g;
+  }
+
+  /* Generic airliner from real length, wingspan and fuselage diameter. Nose at x = +len/2. */
+  function buildAirliner(p, color) {
+    var g = new THREE.Group();
+    var accent = M(color, { roughness: 0.4 });
+    var L = p.len, r = p.fusD / 2, gearH = p.gearH;
+    var cy = gearH + r; // fuselage centre height
+    // fuselage by lathe (profile around the y axis, then turned to point along +x)
+    var pts = [], prof = [[0, 0], [0.22, 0.012], [0.45, 0.035], [0.7, 0.07], [0.88, 0.11], [1, 0.17], [1, 0.70], [0.92, 0.78], [0.7, 0.88], [0.42, 0.96], [0.18, 1.0]];
+    for (var i = prof.length - 1; i >= 0; i--) pts.push(new THREE.Vector2(prof[i][0] * r, L - prof[i][1] * L));
+    pts.reverse();
+    var tailUp = new THREE.LatheGeometry(pts.map(function (v) { return new THREE.Vector2(Math.max(v.x, 0.001), v.y); }), 28);
+    tailUp.rotateZ(-Math.PI / 2);
+    tailUp.translate(-L / 2, cy, 0);
+    g.add(new THREE.Mesh(tailUp, white));
+    // window line and cockpit
+    [-1, 1].forEach(function (s) {
+      g.add(box(L * 0.6, r * 0.13, 0.05, glass, L * 0.02, cy + r * 0.32, s * r * 0.97));
+      g.add(box(L * 0.035, r * 0.18, 0.05, glass, L * 0.43, cy + r * 0.38, s * r * 0.75));
+    });
+    // wings: planform polygon (x along fuselage, v across), extruded thin
+    function planform(span, cr, ct, sweepDeg, x0, thick) {
+      var semi = span / 2, off = Math.tan(sweepDeg * Math.PI / 180) * semi;
+      var s = new THREE.Shape();
+      s.moveTo(x0, 0); s.lineTo(x0 - off, semi); s.lineTo(x0 - off - ct, semi); s.lineTo(x0 - cr, 0);
+      s.lineTo(x0 - off - ct, -semi); s.lineTo(x0 - off, -semi); s.lineTo(x0, 0);
+      var geo = new THREE.ExtrudeGeometry(s, { depth: thick, bevelEnabled: false });
+      geo.rotateX(Math.PI / 2);
+      return geo;
+    }
+    var wingX = L / 2 - L * p.wingAt;
+    var wy = p.high ? cy + r * 0.92 : cy - r * 0.55;
+    var wing = new THREE.Mesh(planform(p.span, p.cr, p.ct, p.sweep, wingX, Math.max(0.25, p.cr * 0.08)), white);
+    wing.position.y = wy + Math.max(0.25, p.cr * 0.08) / 2;
+    g.add(wing);
+    var semi = p.span / 2, off = Math.tan(p.sweep * Math.PI / 180) * semi;
+    [-1, 1].forEach(function (s) {
+      g.add(box(p.ct * 0.9, 0.12, 0.3, accent, wingX - off - p.ct * 0.45, wy + 0.12, s * (semi - 0.15)));
+    });
+    // engines
+    p.engZ.forEach(function (ez) {
+      [-1, 1].forEach(function (s) {
+        var z = s * ez, frac = ez / semi, leX = wingX - off * frac;
+        if (p.prop) {
+          var nac = new THREE.Mesh(new THREE.CylinderGeometry(p.engR, p.engR * 0.8, p.engL, 18), white);
+          nac.rotation.z = Math.PI / 2; nac.position.set(leX - p.engL * 0.25, wy - p.engR * 0.2, z); g.add(nac);
+          var hub = new THREE.Group(); hub.position.set(leX + p.engL * 0.27, wy - p.engR * 0.2, z); g.add(hub);
+          var sp = new THREE.Mesh(new THREE.ConeGeometry(p.engR * 0.55, p.engR * 1.4, 18), white); sp.rotation.z = -Math.PI / 2; sp.position.x = p.engR * 0.6; hub.add(sp);
+          for (var b = 0; b < 6; b++) { var bl = new THREE.Group(); bl.rotation.x = b * Math.PI / 3 + 0.3; bl.add(box(0.08, p.propD / 2, 0.28, dark, 0.1, p.propD / 4, 0)); hub.add(bl); }
+        } else {
+          var ny = wy - p.engR * 1.15;
+          var n = new THREE.Mesh(new THREE.CylinderGeometry(p.engR, p.engR * 0.82, p.engL, 24, 1, true), nacelleMat);
+          n.rotation.z = Math.PI / 2; n.position.set(leX - p.engL * 0.1, ny, z); g.add(n);
+          var fan = new THREE.Mesh(new THREE.CircleGeometry(p.engR * 0.94, 24), dark);
+          fan.rotation.y = Math.PI / 2; fan.position.set(leX - p.engL * 0.1 + p.engL / 2 - 0.15, ny, z); g.add(fan);
+          var core = new THREE.Mesh(new THREE.ConeGeometry(p.engR * 0.45, p.engL * 0.35, 16), grey);
+          core.rotation.z = Math.PI / 2; core.position.set(leX - p.engL * 0.1 - p.engL / 2 - p.engL * 0.12, ny, z); g.add(core);
+          g.add(box(p.engL * 0.6, p.engR * 0.9, 0.25, white, leX - p.engL * 0.2, ny + p.engR * 1.0, z)); // pylon
+        }
+      });
+    });
+    // fin
+    var finH = p.finH, finC = p.finC;
+    var fin = new THREE.Shape();
+    fin.moveTo(0, 0); fin.lineTo(finC, 0); fin.lineTo(finC * 1.05, finH); fin.lineTo(finC * 0.75, finH); fin.lineTo(0, 0);
+    var finGeo = new THREE.ExtrudeGeometry(fin, { depth: Math.max(0.3, r * 0.12), bevelEnabled: false });
+    finGeo.translate(0, 0, -Math.max(0.3, r * 0.12) / 2);
+    var finMesh = new THREE.Mesh(finGeo, accent);
+    var tailEnd = -L / 2 + L * 0.015, finBase = cy + r * 0.15;
+    finMesh.scale.x = -1; // sweep the fin backwards
+    finMesh.position.set(tailEnd + finC, finBase, 0);
+    g.add(finMesh);
+    // horizontal tail: on top of the fin (T-tail) or at the fin root
+    var tailX = p.tTail ? tailEnd + finC * 0.27 : tailEnd + finC * 0.7;
+    var htY = p.tTail ? finBase + finH : cy + r * 0.15;
+    var ht = new THREE.Mesh(planform(p.tailSpan, p.tailSpan * 0.22, p.tailSpan * 0.09, p.sweep + 4, tailX, 0.22), white);
+    ht.position.y = htY + 0.11;
+    g.add(ht);
+    // landing gear
+    var wheel = new THREE.CylinderGeometry(Math.max(0.35, gearH * 0.32), Math.max(0.35, gearH * 0.32), 0.4, 14);
+    function leg(x, z) {
+      g.add(rod([x, 0.3, z], [x, cy - r * 0.6, z], Math.max(0.08, gearH * 0.06), grey));
+      var w = new THREE.Mesh(wheel, dark); w.rotation.x = Math.PI / 2; w.position.set(x, Math.max(0.35, gearH * 0.32), z); g.add(w);
+    }
+    leg(L / 2 - L * 0.12, 0);
+    leg(wingX - p.cr * 0.75, r * 0.9); leg(wingX - p.cr * 0.75, -r * 0.9);
+    g.userData.nose = L / 2; g.userData.top = finBase + finH;
+    return g;
+  }
+
+  var SHAPE = {
+    atr:  { len: 27.17, span: 27.05, fusD: 2.8, gearH: 0.55, high: true, prop: true, wingAt: 0.43, cr: 2.6, ct: 1.4, sweep: 2, engZ: [4.1], engR: 0.55, engL: 4.2, propD: 3.93, finH: 4.3, finC: 4.6, tTail: true, tailSpan: 7.3 },
+    a320: { len: 37.57, span: 35.8, fusD: 3.95, gearH: 1.3, high: false, prop: false, wingAt: 0.36, cr: 6.1, ct: 1.6, sweep: 25, engZ: [5.75], engR: 1.05, engL: 4.4, finH: 6.3, finC: 6.2, tTail: false, tailSpan: 12.45 },
+    b738: { len: 39.47, span: 35.79, fusD: 3.76, gearH: 1.05, high: false, prop: false, wingAt: 0.37, cr: 6.3, ct: 1.6, sweep: 25, engZ: [4.9], engR: 0.95, engL: 4.2, finH: 7.0, finC: 6.6, tTail: false, tailSpan: 14.35 },
+    b789: { len: 62.81, span: 60.12, fusD: 5.77, gearH: 2.4, high: false, prop: false, wingAt: 0.37, cr: 10.5, ct: 2.2, sweep: 32, engZ: [9.8], engR: 1.75, engL: 7.2, finH: 9.6, finC: 9.5, tTail: false, tailSpan: 19.8 },
+    a359: { len: 66.8, span: 64.75, fusD: 5.96, gearH: 2.4, high: false, prop: false, wingAt: 0.37, cr: 11.0, ct: 2.3, sweep: 31.9, engZ: [10.5], engR: 1.75, engL: 7.0, finH: 9.8, finC: 10.0, tTail: false, tailSpan: 19.5 }
+  };
+
+  // ground: lagoon + apron
+  var water = new THREE.Mesh(new THREE.PlaneGeometry(3000, 3000), M(0x1fa9a8, { roughness: 0.55, metalness: 0.05 }));
+  water.rotation.x = -Math.PI / 2; scene.add(water);
+  var groups = [], z = 0, positions = [];
+  AC.forEach(function (a, i) {
+    var w = a.span;
+    if (i > 0) z += w / 2;
+    positions.push(z);
+    z += w / 2 + 14;
+  });
+  var apronZ0 = positions[1] - AC[1].span / 2 - 8, apronZ1 = positions[5] + AC[5].span / 2 + 10;
+  var apron = new THREE.Mesh(new THREE.BoxGeometry(110, 0.6, apronZ1 - apronZ0), M(0xb9c1c3, { roughness: 0.9 }));
+  apron.position.set(-30, -0.25, (apronZ0 + apronZ1) / 2); scene.add(apron);
+  for (var m = apronZ0 + 6; m < apronZ1 - 4; m += 12) scene.add(box(6, 0.02, 0.35, M(0xf2c01d, { roughness: 0.8 }), 12, 0.06, m)); // nose line marks
+  var dock = box(4, 0.3, 3, M(0xb08a5b, { roughness: 0.8 }), -2, 0.1, positions[0] + 6); scene.add(dock);
+
+  var center = new THREE.Vector3(-25, 0, (positions[0] + positions[5]) / 2);
+  var pickList = [];
+  AC.forEach(function (a, i) {
+    var g = i === 0 ? buildTwinOtter(a.color) : buildAirliner(SHAPE[a.id], a.color);
+    g.position.set(-g.userData.nose + 10, i === 0 ? 0 : 0.05, positions[i]);
+    scene.add(g);
+    g.traverse(function (o) { if (o.isMesh) { o.material = o.material.clone(); o.material.emissive = new THREE.Color(0); o.userData.ac = i; pickList.push(o); } });
+    groups.push(g);
+  });
+
+  // labels
+  var labelsBox = el("labels"), tags = [];
+  AC.forEach(function (a, i) {
+    var t = document.createElement("button");
+    t.type = "button"; t.className = "tag"; t.style.borderLeftColor = a.color;
+    t.innerHTML = "<b></b><span></span>";
+    t.querySelector("b").textContent = a.short;
+    t.querySelector("span").textContent = a.len.toFixed(1) + " m long · " + a.span.toFixed(1) + " m span";
+    t.addEventListener("click", function () { selectAc(i, true); });
+    labelsBox.appendChild(t);
+    tags.push(t);
+  });
+
+  // highlight + selection
+  var hover = -1;
+  function paint() {
+    pickList.forEach(function (o) {
+      var i = o.userData.ac, on = i === hover ? 0.25 : (i === selected ? 0.14 : 0);
+      o.material.emissive.set(i === hover || i === selected ? AC[i].color : 0x000000);
+      o.material.emissiveIntensity = on;
+    });
+    tags.forEach(function (t, i) { t.classList.toggle("active", i === selected); });
+  }
+  var fly = null;
+  function flyTo(pos, target, ms) {
+    fly = { t0: performance.now(), dur: reduceMotion ? 1 : (ms || 1000), c0: camera.position.clone(), c1: pos, g0: controls.target.clone(), g1: target };
+  }
+  selectAc = function (i, move) {
+    selected = i; renderCard(i); paint();
+    if (move) {
+      var g = groups[i], a = AC[i], d = Math.max(28, a.span * 1.15);
+      var tgt = new THREE.Vector3(g.position.x + g.userData.nose - a.len / 2, 3, g.position.z);
+      flyTo(new THREE.Vector3(tgt.x + d * 0.9, d * 0.45, tgt.z + d * 0.55), tgt);
+    }
+  };
+  var VIEWS = {
+    front: function () { return [new THREE.Vector3(center.x + 300, 110, center.z + 170), center.clone()]; },
+    above: function () { return [new THREE.Vector3(center.x + 1, 520, center.z), center.clone()]; },
+    side:  function () { return [new THREE.Vector3(center.x + 40, 30, center.z + 380), new THREE.Vector3(center.x, 8, center.z)]; }
+  };
+  Array.prototype.forEach.call(document.querySelectorAll("[data-view]"), function (b) {
+    b.addEventListener("click", function () {
+      var v = VIEWS[b.getAttribute("data-view")]();
+      flyTo(v[0], v[1], 1200);
+      Array.prototype.forEach.call(document.querySelectorAll("[data-view]"), function (o) { o.setAttribute("aria-pressed", o === b ? "true" : "false"); });
+    });
+  });
+  var v0 = VIEWS.front();
+  camera.position.copy(v0[0]); controls.target.copy(v0[1]);
+  paint();
+
+  var ray = new THREE.Raycaster(), ptr = new THREE.Vector2(), downAt = null;
+  function pick(ev) {
+    var r = renderer.domElement.getBoundingClientRect();
+    ptr.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
+    ray.setFromCamera(ptr, camera);
+    var h = ray.intersectObjects(pickList, false)[0];
+    return h ? h.object.userData.ac : -1;
+  }
+  renderer.domElement.addEventListener("pointermove", function (ev) {
+    if (ev.pointerType !== "mouse") return;
+    var h = pick(ev);
+    if (h !== hover) { hover = h; paint(); renderer.domElement.style.cursor = h >= 0 ? "pointer" : "grab"; }
+  });
+  renderer.domElement.addEventListener("pointerleave", function () { hover = -1; paint(); });
+  renderer.domElement.addEventListener("pointerdown", function (ev) { downAt = [ev.clientX, ev.clientY]; });
+  renderer.domElement.addEventListener("pointerup", function (ev) {
+    if (!downAt) return;
+    var moved = Math.abs(ev.clientX - downAt[0]) + Math.abs(ev.clientY - downAt[1]); downAt = null;
+    if (moved > 6) return;
+    var h = pick(ev); if (h >= 0) selectAc(h, true);
+  });
+  controls.addEventListener("start", function () { fly = null; });
+
+  function resize() {
+    var w = stage.clientWidth, h = stage.clientHeight;
+    renderer.setSize(w, h, false); camera.aspect = w / Math.max(h, 1); camera.updateProjectionMatrix();
+  }
+  if (window.ResizeObserver) new ResizeObserver(resize).observe(stage); else window.addEventListener("resize", resize);
+  resize();
+
+  var tmp = new THREE.Vector3();
+  function frame(now) {
+    if (fly) {
+      var k = Math.min((now - fly.t0) / fly.dur, 1), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+      camera.position.lerpVectors(fly.c0, fly.c1, e); controls.target.lerpVectors(fly.g0, fly.g1, e);
+      if (k >= 1) fly = null;
+    }
+    controls.update();
+    if (!reduceMotion) groups[0].position.y = Math.sin(now / 900) * 0.05;
+    renderer.render(scene, camera);
+    var w = stage.clientWidth, h = stage.clientHeight;
+    groups.forEach(function (g, i) {
+      tmp.set(g.position.x + g.userData.nose - AC[i].len * 0.75, g.userData.top + 2, g.position.z);
+      tmp.project(camera);
+      var off = tmp.z > 1 || Math.abs(tmp.x) > 1.1 || Math.abs(tmp.y) > 1.1;
+      tags[i].style.display = off ? "none" : "";
+      tags[i].style.left = ((tmp.x * 0.5 + 0.5) * w) + "px";
+      tags[i].style.top = ((-tmp.y * 0.5 + 0.5) * h) + "px";
+      tags[i].dataset.y = String((-tmp.y * 0.5 + 0.5) * h);
+    });
+    // Keep labels from piling up: lift any label that overlaps one already placed
+    var placed = [];
+    tags.map(function (t, i) { return i; })
+      .filter(function (i) { return tags[i].style.display !== "none"; })
+      .sort(function (a, b) { return +tags[b].dataset.y - +tags[a].dataset.y; })
+      .forEach(function (i) {
+        var t = tags[i], r = t.getBoundingClientRect(), top = +t.dataset.y, moved = true;
+        for (var guard = 0; moved && guard < 8; guard++) {
+          moved = false;
+          for (var k = 0; k < placed.length; k++) {
+            var q = placed[k];
+            if (r.left < q.right && r.right > q.left && top > q.top && top - (r.bottom - r.top) < q.bottom) {
+              top = q.top - 4;
+              moved = true;
+            }
+          }
+        }
+        t.style.top = top + "px";
+        var hgt = r.bottom - r.top;
+        placed.push({ left: r.left, right: r.right, top: top - hgt, bottom: top });
+      });
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

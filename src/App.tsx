@@ -310,6 +310,16 @@ const Projects = () => {
     }
   ];
 
+  const otherProjects = [
+    {
+      title: "Twin Otter Seaplane Explorer",
+      tag: "3D × Aviation",
+      desc: "An interactive 3D model of the seaplane behind Maldives resort transfers. Turn it, zoom in and take a guided tour of each part.",
+      image: "projects/twin-otter.jpg",
+      href: "projects/twin-otter/"
+    }
+  ];
+
   return (
     <section id="projects" className="py-24 px-6">
       <div className="max-w-6xl mx-auto">
@@ -358,8 +368,30 @@ const Projects = () => {
             </Reveal>
           ))}
         </div>
+
         <Reveal>
-          <p className="mt-8 text-sm text-zinc-500">More finance and data projects are on the way.</p>
+          <div className="mt-16">
+            <h3 className="font-mono text-xs uppercase tracking-wider text-zinc-400 mb-4">Other projects</h3>
+            <div className="grid md:grid-cols-2 gap-5">
+              {otherProjects.map((p) => (
+                <a
+                  key={p.title}
+                  href={p.href}
+                  className="group grid grid-cols-[120px_1fr] sm:grid-cols-[160px_1fr] gap-4 items-center bg-white border border-zinc-200 rounded-2xl p-3 pr-5 hover:border-zinc-400 hover:shadow-lg hover:shadow-zinc-200/60 transition-all"
+                >
+                  <img src={p.image} alt={`${p.title} preview`} loading="lazy" className="w-full aspect-[16/10] object-cover rounded-xl bg-zinc-100" />
+                  <div className="min-w-0">
+                    <p className="font-mono text-[11px] text-emerald-700">{p.tag}</p>
+                    <p className="font-semibold text-zinc-900 mt-0.5 inline-flex items-center gap-1">
+                      {p.title}
+                      <ArrowUpRight className="w-4 h-4 text-zinc-400 group-hover:text-emerald-600 transition-colors" />
+                    </p>
+                    <p className="text-sm text-zinc-600 leading-snug mt-1">{p.desc}</p>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
         </Reveal>
       </div>
     </section>

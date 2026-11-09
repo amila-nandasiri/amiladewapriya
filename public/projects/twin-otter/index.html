@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twin Otter Seaplane Explorer | Amila Dewapriya</title>
+<meta name="description" content="An interactive 3D model of the DHC-6 Twin Otter seaplane used for resort transfers in the Maldives. Explore it part by part. Built by Amila Dewapriya.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: full-height 3D stage on the left, a spec "data plate" panel on the right (stacks under the stage on phones). One visual world: Maldives lagoon in daylight. */
+:root {
+  --ink: #0d2b33;
+  --muted: #557079;
+  --lagoon: #0e7c86;
+  --paper: #ffffff;
+  --mist: #eef6f7;
+  --line: #d3e4e7;
+  --sun: #f26b1d;
+  --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--mist);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.5;
+}
+.app {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  height: 100%;
+  min-height: 560px;
+}
+.stage {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(#bfe6ef, #eaf7f8);
+  touch-action: none;
+}
+.stage canvas { display: block; width: 100%; height: 100%; outline: none; }
+
+.intro {
+  position: absolute;
+  left: 20px;
+  top: 18px;
+  max-width: 420px;
+  pointer-events: none;
+}
+.intro h1 {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 34px;
+  line-height: 1.05;
+  letter-spacing: 0.01em;
+  margin: 0 0 6px;
+  text-wrap: balance;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.6);
+}
+.intro { transition: opacity 0.3s; }
+.intro.faded { opacity: 0; }
+.intro p { margin: 0; color: var(--ink); opacity: 0.85; font-size: 14px; max-width: 46ch; }
+.hint {
+  display: inline-flex;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.75);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.markers { position: absolute; inset: 0; pointer-events: none; }
+.marker {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: var(--sun);
+  color: #fff;
+  font: 600 13px/26px var(--body);
+  text-align: center;
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow: 0 2px 8px rgba(13,43,51,0.35);
+  transition: opacity 0.2s, transform 0.15s;
+  padding: 0;
+}
+.marker::after {
+  content: "";
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
+  border: 2px solid var(--sun);
+  opacity: 0.6;
+  animation: ping 2.2s ease-out infinite;
+}
+.marker:hover, .marker:focus-visible, .marker.active { transform: scale(1.18); }
+.marker.active { background: var(--lagoon); }
+.marker.active::after { border-color: var(--lagoon); }
+.marker.hidden-behind { opacity: 0.3; }
+.marker.offscreen { display: none; }
+.marker:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+@keyframes ping { 0% { transform: scale(0.8); opacity: 0.7; } 100% { transform: scale(1.5); opacity: 0; } }
+
+.tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: var(--ink);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  max-width: 240px;
+  opacity: 0;
+  transform: translate(14px, 14px);
+  transition: opacity 0.12s;
+}
+.tooltip b { display: block; font-family: var(--display); font-size: 16px; letter-spacing: 0.02em; font-weight: 600; }
+.tooltip.show { opacity: 1; }
+
+.toolbar {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.toolbar button {
+  font: 500 13px var(--body);
+  color: var(--ink);
+  background: rgba(255,255,255,0.88);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.toolbar button:hover { background: #fff; border-color: var(--lagoon); }
+.toolbar button[aria-pressed="true"] { background: var(--ink); color: #fff; border-color: var(--ink); }
+.toolbar button:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
+.loading {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  color: var(--muted); font-size: 14px; pointer-events: none;
+}
+
+.panel {
+  background: var(--paper);
+  border-left: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.panel-scroll { overflow-y: auto; padding: 24px 24px 16px; flex: 1; }
+.kicker {
+  font-family: var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--lagoon);
+  margin: 0 0 4px;
+}
+.panel h2 {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 30px;
+  line-height: 1.05;
+  margin: 0 0 12px;
+  text-wrap: balance;
+}
+.panel p { margin: 0 0 16px; max-width: 65ch; }
+.plate {
+  border: 1.5px solid var(--ink);
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 0 0 16px;
+}
+.plate-head {
+  background: var(--ink);
+  color: #fff;
+  font-family: var(--display);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 12px;
+  padding: 5px 12px;
+}
+.plate dl { margin: 0; }
+.plate .row {
+  display: grid;
+  grid-template-columns: 44% 56%;
+  gap: 8px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+}
+.plate .row:first-child { border-top: 0; }
+.plate dt { color: var(--muted); }
+.plate dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+.why {
+  background: var(--mist);
+  border-left: 3px solid var(--sun);
+  padding: 10px 12px;
+  font-size: 14px;
+  border-radius: 0 6px 6px 0;
+  margin: 0 0 16px;
+}
+.why strong { display: block; font-family: var(--display); letter-spacing: 0.06em; text-transform: uppercase; font-size: 12px; color: var(--sun); }
+.parts { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 8px; }
+.parts button {
+  font: 500 13px var(--body);
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+  border-radius: 6px;
+  padding: 5px 9px;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+.parts button .n {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--sun); color: #fff; font-size: 11px; line-height: 18px; text-align: center;
+}
+.parts button[aria-current="true"] { border-color: var(--lagoon); background: var(--mist); }
+.parts button[aria-current="true"] .n { background: var(--lagoon); }
+.parts button:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
+.nav {
+  display: flex;
+  gap: 8px;
+  padding: 12px 24px;
+  border-top: 1px solid var(--line);
+}
+.nav button {
+  flex: 1;
+  font: 600 14px var(--body);
+  padding: 9px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+  cursor: pointer;
+}
+.nav button.primary { background: var(--ink); color: #fff; }
+.nav button:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
+.foot {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 0 24px 14px;
+}
+.foot a { color: var(--lagoon); }
+.back { display: inline-block; font-size: 13px; color: var(--lagoon); text-decoration: none; margin: 0 0 14px; }
+.back:hover { text-decoration: underline; }
+
+@media (max-width: 820px) {
+  .app { grid-template-columns: 1fr; grid-template-rows: 62vh auto; height: auto; }
+  html, body { height: auto; }
+  .panel { border-left: 0; border-top: 1px solid var(--line); }
+  .intro h1 { font-size: 26px; }
+  .intro p { font-size: 13px; }
+  .intro { left: 16px; right: 16px; top: 12px; }
+  .hint { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .marker::after { animation: none; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <section class="stage" id="stage" aria-label="Interactive 3D model of a Twin Otter seaplane">
+    <div class="loading" id="loading">Loading the 3D model…</div>
+    <div class="intro" id="intro">
+      <h1>Meet the Twin Otter seaplane</h1>
+      <p>The de Havilland Canada DHC-6 Twin Otter on floats is the classic seaplane behind resort transfers in the Maldives. Explore it part by part.</p>
+      <span class="hint">Drag to turn · scroll or pinch to zoom · click a numbered dot</span>
+    </div>
+    <div class="markers" id="markers"></div>
+    <div class="tooltip" id="tooltip" role="status" aria-live="polite"></div>
+    <div class="toolbar">
+      <button type="button" id="btnReset">Reset view</button>
+      <button type="button" id="btnSpin" aria-pressed="true">Auto-rotate</button>
+      <button type="button" id="btnProps" aria-pressed="false">Run engines</button>
+    </div>
+  </section>
+
+  <aside class="panel" aria-live="polite">
+    <div class="panel-scroll">
+      <a class="back" href="../../#projects">← Back to portfolio</a>
+      <p class="kicker" id="pKicker">Overview</p>
+      <h2 id="pTitle">DHC-6 Twin Otter seaplane</h2>
+      <p id="pText"></p>
+      <div class="plate">
+        <div class="plate-head" id="pPlateHead">Specifications</div>
+        <dl id="pSpecs"></dl>
+      </div>
+      <div class="why" id="pWhy"></div>
+      <p class="kicker">Parts of the aircraft</p>
+      <div class="parts" id="parts"></div>
+    </div>
+    <div class="nav">
+      <button type="button" id="btnPrev">Previous</button>
+      <button type="button" id="btnNext" class="primary">Start the tour</button>
+    </div>
+    <p class="foot">Illustrative model for education, simplified and not exact in every detail. Not affiliated with any airline or operator. Sources: <a href="https://dehavilland.com/wp-content/uploads/2024/03/DHC-6-Twin-Otter-Classic-300-G-v2.pdf">De Havilland</a>, <a href="https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/seaplane_handbook/faa-h-8083-23-1.pdf">FAA seaplane handbook</a>.</p>
+  </aside>
+</div>
+
+<script src="vendor/three.min.js"></script>
+<script src="vendor/OrbitControls.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- Content ---------- */
+  var OVERVIEW = {
+    id: "overview",
+    kicker: "Overview",
+    title: "DHC-6 Twin Otter seaplane",
+    text: "On floats, the Twin Otter is the standard aircraft for seaplane transfers in the Maldives, linking Malé with island resorts across the atolls. It is rugged, simple to maintain and able to land on a lagoon.",
+    specs: [
+      ["First flight", "20 May 1965"],
+      ["Length", "15.8 m"],
+      ["Wingspan", "19.8 m"],
+      ["Max take-off weight", "5,670 kg"],
+      ["Engines", "2 × turboprop"],
+      ["Typical cruise", "~145 kt (270 km/h)"],
+      ["Typical height", "1,500–5,000 ft"],
+      ["Seats", "Up to 19 passengers"]
+    ],
+    why: "The Twin Otter was built from 1965 to 1988, and production restarted in 2007. Many of the aircraft flying today are decades old, kept going by careful maintenance."
+  };
+
+  var PARTS = [
+    {
+      id: "cockpit", name: "Flight deck", short: "Two pilots, flying by sight",
+      pos: [5.75, 3.55, 0], cam: [12, 5.5, 4.5], target: [5.6, 3.0, 0],
+      text: "Maldives seaplanes fly under Visual Flight Rules: the crew navigate and land by looking outside. That is why flights stop at dusk. In many seaplanes there is no cockpit door, so passengers can watch the pilots at work.",
+      specs: [["Crew", "2 pilots"], ["Flight rules", "VFR, daylight only"], ["Classic aircraft", "Analogue instruments"], ["New Classic 300-G", "Garmin G1000 NXi glass cockpit"]],
+      why: "Landing on a lagoon has no runway lights or instrument approach, so the pilots must be able to see the water clearly."
+    },
+    {
+      id: "cabin", name: "Cabin", short: "15 seats, unpressurised",
+      pos: [2.4, 3.05, 0.86], cam: [3, 3.6, 10], target: [1, 2.6, 0],
+      text: "The cabin is not pressurised, so the aircraft stays low, usually a few thousand feet up. That is what gives passengers the famous view of reefs and lagoons. It is also noisy inside.",
+      specs: [["Seats", "Up to 19"], ["Seating", "1 + 2 across"], ["Pressurised", "No"], ["Cabin height", "1.50 m"]],
+      why: "Short hops of around 30 to 45 minutes do not need a high cruise, so a simple unpressurised cabin keeps the aircraft light."
+    },
+    {
+      id: "door", name: "Door and baggage", short: "Rear cabin door",
+      pos: [-2.9, 2.45, -0.86], cam: [-4.5, 3, -9], target: [-2.9, 2.3, 0],
+      text: "Passengers and bags go in through the large door at the back of the cabin. On the Series 400, Viking modified the rear door so passengers and luggage can get off faster when the aircraft is on the water.",
+      specs: [["External baggage space", "2.5 m³ (88 cu ft)"], ["Boarding", "From a floating platform"]],
+      why: "Weight matters more on water: every extra kilo lengthens the take-off run across the lagoon."
+    },
+    {
+      id: "engines", name: "Engines", short: "2 × Pratt & Whitney PT6A",
+      pos: [3.6, 3.88, 2.9], cam: [9, 6.5, 8], target: [4, 3.5, 2.9],
+      text: "Two Pratt & Whitney Canada PT6A turboprop engines, one under each side of the wing. With two engines, the aircraft can keep flying if one stops, which matters over open ocean.",
+      specs: [["Series 300 engine", "PT6A-27"], ["Power", "~620 hp each"], ["Series 400 engine", "PT6A-34"], ["Fuel", "Jet fuel"]],
+      why: "Full power is needed to push the floats over the hump of water drag before they start skimming."
+    },
+    {
+      id: "propellers", name: "Propellers", short: "Three blades, reversible",
+      pos: [5.98, 3.45, -2.9], cam: [11, 4, -6], target: [5.8, 3.45, -2.9],
+      text: "Each engine turns a three-blade propeller about 2.6 m across. Pilots can reverse the blade angle to slow down and manoeuvre, which helps on water where there are no brakes.",
+      specs: [["Blades", "3 per propeller"], ["Diameter", "~2.6 m"], ["Reverse pitch", "Yes"], ["Feathering", "Yes, if an engine fails"]],
+      why: "Mounted high on the wing, the propellers stay clear of most of the spray thrown up during take-off."
+    },
+    {
+      id: "wing", name: "High wing", short: "19.8 m span, short take-off",
+      pos: [2.6, 3.82, 7.5], cam: [2, 13, 13], target: [2.6, 3.6, 3],
+      text: "The wing sits on top of the fuselage, braced by one strut on each side. Large slotted flaps along the back edge add lift at low speed, so the Twin Otter can take off and land in a short distance (STOL).",
+      specs: [["Span", "19.8 m"], ["Wing area", "39 m²"], ["Layout", "High wing, strut-braced"], ["Short take-off", "STOL design"]],
+      why: "As the wing moves forward it turns the air downward. The pressure difference above and below pushes the aircraft up."
+    },
+    {
+      id: "floats", name: "Floats", short: "Aluminium, with a step",
+      pos: [3.0, 0.78, 1.95], cam: [6, 1.8, 10], target: [0.5, 0.5, 1.5],
+      text: "The floats replace wheels. Each one is hollow aluminium split into watertight compartments, so one leak cannot sink it. A break in the bottom called the step lets the float skim the surface at speed.",
+      specs: [["Material", "Aluminium alloy"], ["Buoyancy", "80% more than max weight"], ["Compartments", "4 or more per float"], ["Steering on water", "Water rudders at the back"]],
+      why: "Take-off runs in four phases: floating, plowing over the hump, skimming on the step, then lift-off."
+    },
+    {
+      id: "tail", name: "Tail", short: "Tall fin, extra small fins",
+      pos: [-6.85, 5.05, 0], cam: [-15, 6.5, 7], target: [-6.5, 4, 0],
+      text: "The tall fin and rudder keep the aircraft straight at low speed. On the water the large tail makes a floating seaplane swing its nose into the wind, like a weathervane. Float versions add small extra fins for stability.",
+      specs: [["Fin", "Tall fin with rudder"], ["Floatplane extra", "Small auxiliary fins"], ["On the water", "Weathervanes into wind"]],
+      why: "Seaplanes almost always take off into the wind, and on open water the pilot can simply turn to face it."
+    }
+  ];
+  var DEFAULT_CAM = [16, 7, 18], DEFAULT_TARGET = [0, 2.4, 0];
+  var ORDER = [OVERVIEW].concat(PARTS);
+
+  /* ---------- Panel ---------- */
+  var el = function (id) { return document.getElementById(id); };
+  var current = 0;
+  // Panel-only selection; replaced with the 3D-aware version once the model loads.
+  var select = function (i) { current = i; renderPanel(i); };
+  var partsBox = el("parts");
+  PARTS.forEach(function (p, i) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.id = "part-" + p.id;
+    b.innerHTML = '<span class="n">' + (i + 1) + "</span>" + p.name;
+    b.addEventListener("click", function () { select(i + 1); });
+    partsBox.appendChild(b);
+  });
+
+  function renderPanel(idx) {
+    var d = ORDER[idx];
+    el("pKicker").textContent = idx === 0 ? "Overview" : "Part " + idx + " of " + PARTS.length;
+    el("pTitle").textContent = d.id === "overview" ? d.title : d.name;
+    el("pText").textContent = d.text;
+    el("pPlateHead").textContent = idx === 0 ? "Specifications" : d.name + " · key facts";
+    var specs = el("pSpecs");
+    specs.innerHTML = "";
+    d.specs.forEach(function (s) {
+      var row = document.createElement("div");
+      row.className = "row";
+      var dt = document.createElement("dt"); dt.textContent = s[0];
+      var dd = document.createElement("dd"); dd.textContent = s[1];
+      row.appendChild(dt); row.appendChild(dd);
+      specs.appendChild(row);
+    });
+    el("pWhy").innerHTML = "<strong>" + (idx === 0 ? "Did you know" : "Why it matters") + "</strong>";
+    el("pWhy").appendChild(document.createTextNode(d.why));
+    PARTS.forEach(function (p, i) {
+      el("part-" + p.id).setAttribute("aria-current", i + 1 === idx ? "true" : "false");
+    });
+    el("btnPrev").disabled = idx === 0;
+    el("btnNext").textContent = idx === 0 ? "Start the tour" : (idx === ORDER.length - 1 ? "Back to overview" : "Next part");
+  }
+  renderPanel(0);
+
+  el("btnPrev").addEventListener("click", function () { if (current > 0) select(current - 1); });
+  el("btnNext").addEventListener("click", function () { select(current === ORDER.length - 1 ? 0 : current + 1); });
+
+  /* ---------- 3D ---------- */
+  if (typeof THREE === "undefined" || !THREE.OrbitControls) {
+    el("loading").textContent = "The 3D model could not load. Check your connection and refresh.";
+    return;
+  }
+  var stage = el("stage");
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  stage.insertBefore(renderer.domElement, stage.firstChild);
+  el("loading").remove();
+
+  var scene = new THREE.Scene();
+  (function sky() {
+    var c = document.createElement("canvas"); c.width = 2; c.height = 256;
+    var g = c.getContext("2d");
+    var grd = g.createLinearGradient(0, 0, 0, 256);
+    grd.addColorStop(0, "#5fb8d6"); grd.addColorStop(0.55, "#bfe6ef"); grd.addColorStop(1, "#eaf7f8");
+    g.fillStyle = grd; g.fillRect(0, 0, 2, 256);
+    var tex = new THREE.CanvasTexture(c); tex.encoding = THREE.sRGBEncoding;
+    scene.background = tex;
+  })();
+  scene.fog = new THREE.Fog(0xd6eff3, 70, 220);
+
+  var camera = new THREE.PerspectiveCamera(38, 1, 0.1, 600);
+  camera.position.set(DEFAULT_CAM[0], DEFAULT_CAM[1], DEFAULT_CAM[2]);
+
+  var controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.target.set(DEFAULT_TARGET[0], DEFAULT_TARGET[1], DEFAULT_TARGET[2]);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.minDistance = 6;
+  controls.maxDistance = 48;
+  controls.maxPolarAngle = Math.PI * 0.49;
+  controls.enablePan = false;
+  controls.autoRotate = !reduceMotion;
+  controls.autoRotateSpeed = 0.7;
+  el("btnSpin").setAttribute("aria-pressed", controls.autoRotate ? "true" : "false");
+
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x4fb3b0, 0.75));
+  var sun = new THREE.DirectionalLight(0xfff3e0, 1.0);
+  sun.position.set(20, 30, 12);
+  scene.add(sun);
+  var fill = new THREE.DirectionalLight(0xcfeffa, 0.35);
+  fill.position.set(-20, 10, -15);
+  scene.add(fill);
+
+  /* Materials */
+  function M(color, opts) {
+    var o = { color: color, roughness: 0.5, metalness: 0.05 };
+    for (var k in opts) o[k] = opts[k];
+    return new THREE.MeshStandardMaterial(o);
+  }
+  var white = M(0xf7f9fa, { roughness: 0.35 });
+  var teal = M(0x0e7c86, { roughness: 0.4 });
+  var orange = M(0xf26b1d, { roughness: 0.4 });
+  var glass = M(0x16323a, { roughness: 0.1, metalness: 0.4 });
+  var alu = M(0xc7d0d4, { roughness: 0.35, metalness: 0.55 });
+  var dark = M(0x2b3236, { roughness: 0.6 });
+  var grey = M(0x9aa6ab, { roughness: 0.5, metalness: 0.3 });
+  var tipYellow = M(0xf2c01d, { roughness: 0.5 });
+
+  var model = new THREE.Group();
+  scene.add(model);
+  var pickables = [];
+  function add(mesh, part, parent) {
+    mesh.userData.part = part;
+    (parent || model).add(mesh);
+    pickables.push(mesh);
+    return mesh;
+  }
+  function extrude(shape, depth, bevel, seg) {
+    var g = new THREE.ExtrudeGeometry(shape, {
+      depth: depth, bevelEnabled: bevel > 0, bevelThickness: bevel, bevelSize: bevel, bevelSegments: seg || 3, curveSegments: 18
+    });
+    g.translate(0, 0, -depth / 2);
+    return g;
+  }
+  function rod(a, b, r, mat) {
+    var A = new THREE.Vector3(a[0], a[1], a[2]), B = new THREE.Vector3(b[0], b[1], b[2]);
+    var dir = new THREE.Vector3().subVectors(B, A);
+    var len = dir.length();
+    var m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, 10), mat);
+    m.position.copy(A).addScaledVector(dir, 0.5);
+    m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+    return m;
+  }
+  function box(w, h, d, mat, x, y, z) {
+    var m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+    m.position.set(x, y, z);
+    return m;
+  }
+
+  /* Fuselage (side profile extruded, bevel rounds the edges) */
+  var fus = new THREE.Group();
+  fus.position.y = 1.6;
+  model.add(fus);
+  var fs = new THREE.Shape();
+  fs.moveTo(-7.6, 1.1);
+  fs.lineTo(-7.6, 1.55);
+  fs.lineTo(-2.0, 1.75);
+  fs.lineTo(4.9, 1.75);
+  fs.quadraticCurveTo(5.6, 1.75, 6.4, 1.2);
+  fs.quadraticCurveTo(7.1, 0.85, 7.2, 0.55);
+  fs.quadraticCurveTo(7.2, 0.1, 6.4, 0.05);
+  fs.lineTo(-2.4, 0.05);
+  fs.lineTo(-7.6, 1.1);
+  add(new THREE.Mesh(extrude(fs, 1.25, 0.2, 5), white), "cabin", fus);
+
+  // windscreen and cockpit side windows
+  var ws = box(1.1, 0.04, 1.15, glass, 5.69, 1.8, 0);
+  ws.rotation.z = -0.351;
+  add(ws, "cockpit", fus);
+  [-1, 1].forEach(function (s) {
+    add(box(0.75, 0.42, 0.02, glass, 5.25, 1.3, s * 0.835), "cockpit", fus);
+    for (var i = 0; i < 7; i++) {
+      add(box(0.46, 0.4, 0.02, glass, -1.9 + i * 0.95, 1.27, s * 0.835), "cabin", fus);
+    }
+    add(box(10.9, 0.12, 0.02, teal, 0.85, 0.6, s * 0.836), "cabin", fus);
+    add(box(10.1, 0.04, 0.02, orange, 1.25, 0.45, s * 0.836), "cabin", fus);
+  });
+  // rear door (left side)
+  add(box(0.92, 1.25, 0.03, grey, -2.9, 0.88, -0.84), "door", fus);
+  add(box(0.06, 0.06, 0.05, dark, -2.55, 0.85, -0.865), "door", fus);
+
+  /* Wing (airfoil extruded along the span) */
+  var af = new THREE.Shape();
+  af.moveTo(-1.0, 0.02);
+  af.quadraticCurveTo(-0.2, 0.2, 0.7, 0.16);
+  af.quadraticCurveTo(1.0, 0.12, 1.0, 0.0);
+  af.quadraticCurveTo(0.9, -0.08, 0.5, -0.08);
+  af.lineTo(-1.0, -0.01);
+  var wing = add(new THREE.Mesh(extrude(af, 19.8, 0.03, 2), white), "wing");
+  wing.position.set(2.6, 3.63, 0);
+  [-1, 1].forEach(function (s) {
+    var tip = add(box(1.9, 0.06, 0.25, teal, 2.6, 3.7, s * 9.85), "wing");
+    tip.userData.part = "wing";
+    add(rod([2.6, 2.05, s * 0.83], [2.6, 3.58, s * 4.6], 0.05, grey), "wing");
+  });
+
+  /* Engines and propellers */
+  var props = [];
+  [-1, 1].forEach(function (s) {
+    var z = s * 2.9;
+    var nac = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.3, 3.3, 20), white);
+    nac.rotation.z = Math.PI / 2;
+    nac.position.set(4.0, 3.48, z);
+    add(nac, "engines");
+    var intake = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.2, 0.25, 14), dark);
+    intake.rotation.z = Math.PI / 2;
+    intake.position.set(5.2, 3.18, z);
+    add(intake, "engines");
+    add(rod([3.2, 3.5, z + s * 0.32], [3.2, 3.5, z + s * 0.6], 0.09, dark), "engines"); // exhaust stub
+
+    var prop = new THREE.Group();
+    prop.position.set(5.78, 3.48, z);
+    model.add(prop);
+    var spinner = new THREE.Mesh(new THREE.ConeGeometry(0.24, 0.55, 20), white);
+    spinner.rotation.z = -Math.PI / 2;
+    spinner.position.x = 0.22;
+    add(spinner, "propellers", prop);
+    for (var i = 0; i < 3; i++) {
+      var blade = new THREE.Group();
+      blade.rotation.x = i * (Math.PI * 2 / 3);
+      var b = box(0.05, 1.12, 0.17, dark, 0.05, 0.68, 0);
+      b.rotation.y = 0.35;
+      add(b, "propellers", blade);
+      add(box(0.052, 0.14, 0.17, tipYellow, 0.05, 1.22, 0), "propellers", blade);
+      prop.add(blade);
+    }
+    props.push(prop);
+  });
+
+  /* Tail */
+  var fin = new THREE.Shape();
+  fin.moveTo(-0.2, 0);
+  fin.lineTo(2.6, 0);
+  fin.lineTo(0.95, 2.5);
+  fin.lineTo(0.0, 2.5);
+  fin.lineTo(-0.2, 0.4);
+  fin.lineTo(-0.2, 0);
+  var finMesh = add(new THREE.Mesh(extrude(fin, 0.14, 0.04, 2), teal), "tail");
+  finMesh.position.set(-7.75, 3.2, 0);
+  add(box(1.9, 0.1, 6.3, white, -7.0, 3.42, 0), "tail");
+  [-1, 1].forEach(function (s) {
+    add(box(0.9, 0.55, 0.05, teal, -7.15, 3.15, s * 2.2), "tail");
+  });
+
+  /* Floats */
+  var fl = new THREE.Shape();
+  fl.moveTo(6.2, 0.62);
+  fl.quadraticCurveTo(6.35, 0.22, 5.2, 0.05);
+  fl.lineTo(1.0, 0.0);
+  fl.lineTo(1.0, 0.13);
+  fl.lineTo(-5.4, 0.45);
+  fl.lineTo(-5.6, 0.62);
+  fl.lineTo(6.2, 0.62);
+  var floatGeo = extrude(fl, 0.5, 0.14, 4);
+  [-1, 1].forEach(function (s) {
+    var z = s * 1.55;
+    var f = add(new THREE.Mesh(floatGeo, alu), "floats");
+    f.position.set(0, -0.05, z);
+    add(box(0.35, 0.3, 0.04, dark, -5.75, 0.35, z), "floats"); // water rudder
+    add(rod([3.6, 0.7, z], [3.6, 1.55, s * 0.55], 0.06, grey), "floats");
+    add(rod([0.3, 0.72, z], [0.3, 1.55, s * 0.55], 0.06, grey), "floats");
+    add(rod([3.6, 0.7, z], [1.9, 1.55, s * 0.55], 0.045, grey), "floats");
+  });
+  add(rod([3.6, 0.72, -1.55], [3.6, 0.72, 1.55], 0.045, grey), "floats");
+  add(rod([0.3, 0.74, -1.55], [0.3, 0.74, 1.55], 0.045, grey), "floats");
+
+  /* Per-part material copies so a part can glow when hovered */
+  pickables.forEach(function (m) { m.material = m.material.clone(); m.material.emissive = new THREE.Color(0x000000); });
+
+  /* Water */
+  var waterGeo = new THREE.PlaneGeometry(420, 420, 110, 110);
+  waterGeo.rotateX(-Math.PI / 2);
+  var water = new THREE.Mesh(waterGeo, M(0x1fa9a8, { roughness: 0.55, metalness: 0.05, transparent: true, opacity: 0.95 }));
+  scene.add(water);
+  var wPos = waterGeo.attributes.position;
+  var baseXZ = new Float32Array(wPos.count * 2);
+  for (var wi = 0; wi < wPos.count; wi++) { baseXZ[wi * 2] = wPos.getX(wi); baseXZ[wi * 2 + 1] = wPos.getZ(wi); }
+
+  /* Floating dock and a distant island for scale */
+  var deck = M(0xb08a5b, { roughness: 0.8 });
+  scene.add(box(3.2, 0.22, 2.6, deck, -0.6, 0.12, -4.4));
+  var sand = new THREE.Mesh(new THREE.CircleGeometry(10, 40), M(0xf2e3c2, { roughness: 0.9 }));
+  sand.rotation.x = -Math.PI / 2;
+  sand.scale.set(1.6, 0.8, 1);
+  sand.position.set(-45, 0.08, -70);
+  scene.add(sand);
+  var trunkMat = M(0x8a6a45, { roughness: 0.9 }), leafMat = M(0x2f8f4e, { roughness: 0.7, side: THREE.DoubleSide });
+  [[-48, -70, 0.2], [-43, -68, -0.25], [-40, -73, 0.1], [-52, -72, -0.15]].forEach(function (p) {
+    var palm = new THREE.Group();
+    var trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.3, 7, 8), trunkMat);
+    trunk.position.y = 3.5;
+    palm.add(trunk);
+    for (var i = 0; i < 6; i++) {
+      var leaf = new THREE.Mesh(new THREE.PlaneGeometry(4, 0.9), leafMat);
+      leaf.position.set(Math.cos(i) * 1.6, 7, Math.sin(i) * 1.6);
+      leaf.rotation.y = -i;
+      leaf.rotation.z = -0.5;
+      palm.add(leaf);
+    }
+    palm.rotation.z = p[2];
+    palm.position.set(p[0], 0, p[1]);
+    scene.add(palm);
+  });
+
+  /* ---------- Markers ---------- */
+  var markersBox = el("markers");
+  PARTS.forEach(function (p, i) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "marker";
+    b.textContent = String(i + 1);
+    b.setAttribute("aria-label", p.name + ": " + p.short);
+    b.addEventListener("click", function (e) { e.stopPropagation(); select(i + 1); });
+    b.addEventListener("mouseenter", function () { showTip(p, b.offsetLeft, b.offsetTop); setHover(p.id); });
+    b.addEventListener("mouseleave", function () { hideTip(); setHover(null); });
+    b.addEventListener("focus", function () { showTip(p, b.offsetLeft, b.offsetTop); });
+    b.addEventListener("blur", hideTip);
+    markersBox.appendChild(b);
+    p.el = b;
+    p.v = new THREE.Vector3(p.pos[0], p.pos[1], p.pos[2]);
+  });
+
+  var tip = el("tooltip");
+  function showTip(p, x, y) {
+    tip.innerHTML = "<b></b><span></span>";
+    tip.firstChild.textContent = p.name;
+    tip.lastChild.textContent = p.short + " · click for details";
+    var maxX = stage.clientWidth - 250;
+    tip.style.left = Math.min(x, maxX) + "px";
+    tip.style.top = y + "px";
+    tip.classList.add("show");
+  }
+  function hideTip() { tip.classList.remove("show"); }
+
+  /* ---------- Hover and select ---------- */
+  var hoverId = null, selectedId = null;
+  function paint() {
+    pickables.forEach(function (m) {
+      var part = m.userData.part;
+      var hex = part === hoverId ? 0xf26b1d : (part === selectedId ? 0x0e7c86 : 0x000000);
+      var k = part === hoverId ? 0.32 : (part === selectedId ? 0.22 : 0);
+      m.material.emissive.setHex(hex);
+      m.material.emissiveIntensity = k;
+    });
+  }
+  function setHover(id) { if (id !== hoverId) { hoverId = id; paint(); stage.style.cursor = id ? "pointer" : "grab"; } }
+  function partById(id) { for (var i = 0; i < PARTS.length; i++) if (PARTS[i].id === id) return i; return -1; }
+
+  var ray = new THREE.Raycaster(), pointer = new THREE.Vector2(), downAt = null;
+  function pick(ev) {
+    var r = renderer.domElement.getBoundingClientRect();
+    pointer.x = ((ev.clientX - r.left) / r.width) * 2 - 1;
+    pointer.y = -((ev.clientY - r.top) / r.height) * 2 + 1;
+    ray.setFromCamera(pointer, camera);
+    var hit = ray.intersectObjects(pickables, false)[0];
+    return { id: hit ? hit.object.userData.part : null, x: ev.clientX - r.left, y: ev.clientY - r.top };
+  }
+  renderer.domElement.addEventListener("pointermove", function (ev) {
+    if (ev.pointerType !== "mouse") return;
+    var h = pick(ev);
+    setHover(h.id);
+    if (h.id) showTip(PARTS[partById(h.id)], h.x, h.y); else hideTip();
+  });
+  renderer.domElement.addEventListener("pointerleave", function () { setHover(null); hideTip(); });
+  renderer.domElement.addEventListener("pointerdown", function (ev) { downAt = [ev.clientX, ev.clientY]; });
+  renderer.domElement.addEventListener("pointerup", function (ev) {
+    if (!downAt) return;
+    var moved = Math.abs(ev.clientX - downAt[0]) + Math.abs(ev.clientY - downAt[1]);
+    downAt = null;
+    if (moved > 6) return;
+    var h = pick(ev);
+    if (h.id) select(partById(h.id) + 1);
+  });
+
+  /* Camera fly-to */
+  var fly = null;
+  function flyTo(cam, target) {
+    fly = {
+      t0: performance.now(), dur: reduceMotion ? 1 : 900,
+      c0: camera.position.clone(), c1: new THREE.Vector3(cam[0], cam[1], cam[2]),
+      g0: controls.target.clone(), g1: new THREE.Vector3(target[0], target[1], target[2])
+    };
+  }
+  function stopSpin() { controls.autoRotate = false; el("btnSpin").setAttribute("aria-pressed", "false"); }
+  controls.addEventListener("start", function () { fly = null; stopSpin(); });
+
+  select = function (idx) {
+    current = idx;
+    renderPanel(idx);
+    var d = ORDER[idx];
+    PARTS.forEach(function (p, i) { p.el.classList.toggle("active", i + 1 === idx); });
+    el("intro").classList.toggle("faded", idx !== 0);
+    if (idx === 0) { selectedId = null; flyTo(DEFAULT_CAM, DEFAULT_TARGET); }
+    else { selectedId = d.id; stopSpin(); flyTo(d.cam, d.target); }
+    paint();
+  };
+
+  el("btnReset").addEventListener("click", function () { select(0); });
+  el("btnSpin").addEventListener("click", function () {
+    controls.autoRotate = !controls.autoRotate;
+    this.setAttribute("aria-pressed", controls.autoRotate ? "true" : "false");
+  });
+  var engineRun = false;
+  el("btnProps").addEventListener("click", function () {
+    engineRun = !engineRun;
+    this.setAttribute("aria-pressed", engineRun ? "true" : "false");
+    this.textContent = engineRun ? "Stop engines" : "Run engines";
+  });
+
+  /* ---------- Resize and loop ---------- */
+  function resize() {
+    var w = stage.clientWidth, h = stage.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / Math.max(h, 1);
+    camera.updateProjectionMatrix();
+  }
+  if (window.ResizeObserver) new ResizeObserver(resize).observe(stage); else window.addEventListener("resize", resize);
+  resize();
+
+  var tmp = new THREE.Vector3(), dirV = new THREE.Vector3(), propSpeed = 0;
+  function frame(now) {
+    var t = now / 1000;
+    if (fly) {
+      var k = Math.min((now - fly.t0) / fly.dur, 1);
+      var e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+      camera.position.lerpVectors(fly.c0, fly.c1, e);
+      controls.target.lerpVectors(fly.g0, fly.g1, e);
+      if (k >= 1) fly = null;
+    }
+    controls.update();
+
+    if (!reduceMotion) {
+      model.position.y = Math.sin(t * 0.8) * 0.06;
+      model.rotation.z = Math.sin(t * 0.6) * 0.012;
+      model.rotation.x = Math.sin(t * 0.5) * 0.01;
+      for (var i = 0; i < wPos.count; i++) {
+        var x = baseXZ[i * 2], z = baseXZ[i * 2 + 1];
+        wPos.setY(i, Math.sin(x * 0.18 + t * 1.1) * 0.08 + Math.cos(z * 0.23 + t * 0.9) * 0.07);
+      }
+      wPos.needsUpdate = true;
+    }
+    var goal = engineRun ? 0.9 : 0.03;
+    propSpeed += (goal - propSpeed) * 0.02;
+    props.forEach(function (p) { p.rotation.x += propSpeed; });
+
+    renderer.render(scene, camera);
+
+    // place markers on screen, dim the ones hidden behind the aircraft
+    var w = stage.clientWidth, h = stage.clientHeight;
+    model.updateMatrixWorld();
+    PARTS.forEach(function (p) {
+      tmp.copy(p.v); model.localToWorld(tmp);
+      var dist = camera.position.distanceTo(tmp);
+      dirV.subVectors(tmp, camera.position).normalize();
+      ray.set(camera.position, dirV);
+      var hit = ray.intersectObjects(pickables, false)[0];
+      var behind = hit && hit.distance < dist - 0.35;
+      tmp.project(camera);
+      var off = tmp.z > 1 || Math.abs(tmp.x) > 1.05 || Math.abs(tmp.y) > 1.05;
+      p.el.classList.toggle("offscreen", off);
+      p.el.classList.toggle("hidden-behind", !!behind);
+      p.el.style.left = ((tmp.x * 0.5 + 0.5) * w) + "px";
+      p.el.style.top = ((-tmp.y * 0.5 + 0.5) * h) + "px";
+    });
+    requestAnimationFrame(frame);
+  }
+  stage.style.cursor = "grab";
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

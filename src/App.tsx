@@ -307,6 +307,22 @@ const Projects = () => {
       demo: "projects/three-statement/",
       download: "projects/three-statement/three-statement-model.html",
       code: "https://github.com/amila-nandasiri/three-statement-model"
+    },
+    {
+      title: "Loan Repayment Calculator",
+      tag: "Treasury × Accounting",
+      desc: "Repayment schedules for equal-instalment, equal-principal and interest-only loans, showing the true cost of borrowing after fees and the borrower's IFRS 9 view.",
+      points: [
+        "Extra payments and lump sums: interest and time saved, finishing sooner or lowering payments",
+        "Grace periods and floating-rate resets; compares the three repayment types side by side",
+        "Effective interest rate and APR including fees, checked against Excel's PMT",
+        "IFRS 9 amortised-cost schedule with the effective rate revised at a rate reset; shareable links"
+      ],
+      stack: ["IFRS 9", "React", "TypeScript", "Excel"],
+      image: "projects/loan-calculator.jpg",
+      demo: "projects/loan-calculator/",
+      download: "projects/loan-calculator/loan-repayment-calculator.html",
+      code: "https://github.com/amila-nandasiri/loan-repayment-calculator"
     }
   ];
 

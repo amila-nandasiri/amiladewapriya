@@ -48,7 +48,7 @@ button:focus-visible, .chip:focus-visible { outline: 3px solid var(--sun); outli
 .tag b { font-family: var(--display); font-size: 15px; font-weight: 600; letter-spacing: 0.02em; display: block; }
 .tag.active { background: var(--ink); color: #fff; }
 .card {
-  position: absolute; left: 14px; bottom: 60px; width: 300px; max-width: calc(100% - 28px);
+  position: absolute; right: 14px; bottom: 60px; width: 300px; max-width: calc(100% - 28px);
   background: rgba(255,255,255,0.95); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px;
 }
 .card .k { font-family: var(--display); text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; font-weight: 600; }
@@ -131,10 +131,12 @@ footer ul { margin: 6px 0 12px; padding-left: 18px; }
 }
 @media (max-width: 600px) {
   /* compact card so the 3D line-up stays visible on phones */
-  .card { width: auto; right: 14px; padding: 8px 12px; bottom: 92px; }
+  .card { width: auto; left: 14px; right: 14px; padding: 8px 12px; bottom: 92px; }
   .card h3 { font-size: 19px; margin: 0 0 2px; }
   .card dl dt:nth-of-type(n+3), .card dl dd:nth-of-type(n+3), .card p { display: none; }
   .stagebar .hint { display: none; }
+  .tag { font-size: 11px; padding: 2px 6px; border-left-width: 3px; }
+  .tag span { display: none; }
 }
 </style>
 </head>
@@ -513,6 +515,8 @@ footer ul { margin: 6px 0 12px; padding-left: 18px; }
   var renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
   stage.insertBefore(renderer.domElement, stage.firstChild);
   el("loading").remove();
 
@@ -520,23 +524,26 @@ footer ul { margin: 6px 0 12px; padding-left: 18px; }
   (function () {
     var c = document.createElement("canvas"); c.width = 2; c.height = 256;
     var g = c.getContext("2d"), grd = g.createLinearGradient(0, 0, 0, 256);
-    grd.addColorStop(0, "#5fb8d6"); grd.addColorStop(0.55, "#bfe6ef"); grd.addColorStop(1, "#eaf7f8");
+    grd.addColorStop(0, "#2f8fc4"); grd.addColorStop(0.5, "#8fd0ea"); grd.addColorStop(1, "#e4f5f8");
     g.fillStyle = grd; g.fillRect(0, 0, 2, 256);
     var tex = new THREE.CanvasTexture(c); tex.encoding = THREE.sRGBEncoding; scene.background = tex;
   })();
-  scene.fog = new THREE.Fog(0xd6eff3, 500, 1400);
+  scene.fog = new THREE.Fog(new THREE.Color(0xcdeef3).convertSRGBToLinear(), 600, 1500);
   var camera = new THREE.PerspectiveCamera(36, 1, 0.5, 3000);
   var controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true; controls.dampingFactor = 0.08;
   controls.minDistance = 20; controls.maxDistance = 700; controls.maxPolarAngle = Math.PI * 0.49;
   controls.screenSpacePanning = false;
 
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x8fb7ba, 0.8));
-  var sunL = new THREE.DirectionalLight(0xfff3e0, 0.95); sunL.position.set(120, 200, 80); scene.add(sunL);
+  scene.add(new THREE.HemisphereLight(0xeaf6ff, 0x3d8f8c, 0.75));
+  var sunL = new THREE.DirectionalLight(0xfff1dc, 1.6); sunL.position.set(140, 210, 110);
+  sunL.castShadow = true; sunL.shadow.mapSize.set(2048, 2048); sunL.shadow.bias = -0.0004; sunL.shadow.normalBias = 0.4;
+  var sc = sunL.shadow.camera; sc.left = -190; sc.right = 190; sc.top = 190; sc.bottom = -190; sc.near = 50; sc.far = 700;
+  scene.add(sunL); scene.add(sunL.target);
   var fillL = new THREE.DirectionalLight(0xcfeffa, 0.35); fillL.position.set(-100, 60, -120); scene.add(fillL);
 
   function M(color, opts) {
-    var o = { color: color, roughness: 0.5, metalness: 0.05 };
+    var o = { color: new THREE.Color(color).convertSRGBToLinear(), roughness: 0.5, metalness: 0.05 };
     for (var k in opts) o[k] = opts[k];
     return new THREE.MeshStandardMaterial(o);
   }
@@ -703,8 +710,8 @@ footer ul { margin: 6px 0 12px; padding-left: 18px; }
   };
 
   // ground: lagoon + apron
-  var water = new THREE.Mesh(new THREE.PlaneGeometry(3000, 3000), M(0x1fa9a8, { roughness: 0.55, metalness: 0.05 }));
-  water.rotation.x = -Math.PI / 2; scene.add(water);
+  var water = new THREE.Mesh(new THREE.PlaneGeometry(3000, 3000), M(0x0a7f8e, { roughness: 0.75, metalness: 0.0 }));
+  water.rotation.x = -Math.PI / 2; water.receiveShadow = true; scene.add(water);
   var groups = [], z = 0, positions = [];
   AC.forEach(function (a, i) {
     var w = a.span;
@@ -713,18 +720,30 @@ footer ul { margin: 6px 0 12px; padding-left: 18px; }
     z += w / 2 + 14;
   });
   var apronZ0 = positions[1] - AC[1].span / 2 - 8, apronZ1 = positions[5] + AC[5].span / 2 + 10;
-  var apron = new THREE.Mesh(new THREE.BoxGeometry(110, 0.6, apronZ1 - apronZ0), M(0xb9c1c3, { roughness: 0.9 }));
-  apron.position.set(-30, -0.25, (apronZ0 + apronZ1) / 2); scene.add(apron);
-  for (var m = apronZ0 + 6; m < apronZ1 - 4; m += 12) scene.add(box(6, 0.02, 0.35, M(0xf2c01d, { roughness: 0.8 }), 12, 0.06, m)); // nose line marks
+  (function () { // pale turquoise shallows fading into the deeper lagoon
+    var c = document.createElement("canvas"); c.width = c.height = 256;
+    var g = c.getContext("2d"), grd = g.createRadialGradient(128, 128, 20, 128, 128, 128);
+    grd.addColorStop(0, "rgba(110,220,206,0.85)"); grd.addColorStop(0.55, "rgba(50,180,182,0.45)"); grd.addColorStop(1, "rgba(40,170,180,0)");
+    g.fillStyle = grd; g.fillRect(0, 0, 256, 256);
+    var tex = new THREE.CanvasTexture(c); tex.encoding = THREE.sRGBEncoding;
+    var sh = new THREE.Mesh(new THREE.PlaneGeometry(320, 560), new THREE.MeshStandardMaterial({ map: tex, transparent: true, depthWrite: false, roughness: 0.8 }));
+    sh.rotation.x = -Math.PI / 2; sh.position.set(-25, 0.02, (apronZ0 + apronZ1) / 2 - 20); sh.receiveShadow = true; scene.add(sh);
+  })();
+  var apron = new THREE.Mesh(new THREE.BoxGeometry(110, 0.6, apronZ1 - apronZ0), M(0x6f787c, { roughness: 0.95 }));
+  apron.position.set(-30, -0.25, (apronZ0 + apronZ1) / 2); apron.receiveShadow = true; scene.add(apron);
+  var edge = new THREE.Mesh(new THREE.BoxGeometry(112, 0.5, apronZ1 - apronZ0 + 2), M(0xe9e4d4, { roughness: 0.9 }));
+  edge.position.set(-30, -0.32, (apronZ0 + apronZ1) / 2); edge.receiveShadow = true; scene.add(edge);
+  for (var m = apronZ0 + 6; m < apronZ1 - 4; m += 12) scene.add(box(8, 0.02, 0.45, M(0xf2c01d, { roughness: 0.8 }), 12, 0.06, m)); // nose line marks
   var dock = box(4, 0.3, 3, M(0xb08a5b, { roughness: 0.8 }), -2, 0.1, positions[0] + 6); scene.add(dock);
 
   var center = new THREE.Vector3(-25, 0, (positions[0] + positions[5]) / 2);
+  sunL.target.position.copy(center); sunL.position.set(center.x + 140, 210, center.z + 110);
   var pickList = [];
   AC.forEach(function (a, i) {
     var g = i === 0 ? buildTwinOtter(a.color) : buildAirliner(SHAPE[a.id], a.color);
     g.position.set(-g.userData.nose + 10, i === 0 ? 0 : 0.05, positions[i]);
     scene.add(g);
-    g.traverse(function (o) { if (o.isMesh) { o.material = o.material.clone(); o.material.emissive = new THREE.Color(0); o.userData.ac = i; pickList.push(o); } });
+    g.traverse(function (o) { if (o.isMesh) { o.castShadow = true; o.material = o.material.clone(); o.material.emissive = new THREE.Color(0); o.userData.ac = i; pickList.push(o); } });
     groups.push(g);
   });
 
@@ -764,7 +783,11 @@ footer ul { margin: 6px 0 12px; padding-left: 18px; }
     }
   };
   var VIEWS = {
-    front: function () { return [new THREE.Vector3(center.x + 300, 110, center.z + 170), center.clone()]; },
+    front: function () {
+      var asp = stage.clientWidth / Math.max(stage.clientHeight, 1), k = Math.min(2.4, Math.max(1, 1.5 / asp)); // pull back on narrow screens
+      var tgt = new THREE.Vector3(center.x + 5 + (k - 1) * 45, 0, center.z + 25 + (k - 1) * 8);
+      return [new THREE.Vector3(tgt.x + 250 * k, 90 * k, tgt.z + 150 * k), tgt];
+    },
     above: function () { return [new THREE.Vector3(center.x + 1, 520, center.z), center.clone()]; },
     side:  function () { return [new THREE.Vector3(center.x + 40, 30, center.z + 380), new THREE.Vector3(center.x, 8, center.z)]; }
   };
@@ -825,7 +848,8 @@ footer ul { margin: 6px 0 12px; padding-left: 18px; }
       tmp.project(camera);
       var off = tmp.z > 1 || Math.abs(tmp.x) > 1.1 || Math.abs(tmp.y) > 1.1;
       tags[i].style.display = off ? "none" : "";
-      tags[i].style.left = ((tmp.x * 0.5 + 0.5) * w) + "px";
+      var half = (tags[i].offsetWidth || 0) / 2 + 6, lx = (tmp.x * 0.5 + 0.5) * w; // keep the label inside the stage
+      tags[i].style.left = Math.min(w - half, Math.max(half, lx)) + "px";
       tags[i].style.top = ((-tmp.y * 0.5 + 0.5) * h) + "px";
       tags[i].dataset.y = String((-tmp.y * 0.5 + 0.5) * h);
     });

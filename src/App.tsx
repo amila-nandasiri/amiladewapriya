@@ -333,6 +333,13 @@ const Projects = () => {
       desc: "An interactive 3D model of the seaplane behind Maldives resort transfers. Turn it, zoom in and take a guided tour of each part.",
       image: "projects/twin-otter.jpg",
       href: "projects/twin-otter/"
+    },
+    {
+      title: "Seaplane Crosswind Landing",
+      tag: "3D × Aviation",
+      desc: "An animated landing in a crosswind, from crab and wing-low flare to upwind float first, compared with what goes wrong without correction.",
+      image: "projects/crosswind.jpg",
+      href: "projects/crosswind/"
     }
   ];
 

@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seaplane Crosswind Landing | Amila Dewapriya</title>
+<meta name="description" content="A 3D animation of how a seaplane lands in a crosswind: crab, wing-low flare, upwind float first and weathervaning, compared with what happens without correction. Built by Amila Dewapriya.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: full-height 3D stage (animation + playback bar) on the left, a step-by-step "flight card" panel on the right; stacks on phones. One visual world: Maldives lagoon in daylight. */
+:root {
+  --ink: #0d2b33;
+  --muted: #557079;
+  --lagoon: #0e7c86;
+  --paper: #ffffff;
+  --mist: #eef6f7;
+  --line: #d3e4e7;
+  --sun: #f26b1d;
+  --warn: #c2361b;
+  --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--mist); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.5; }
+.app { display: grid; grid-template-columns: minmax(0, 1fr) 380px; height: 100%; min-height: 600px; }
+.stage { position: relative; overflow: hidden; background: linear-gradient(#bfe6ef, #eaf7f8); touch-action: none; }
+.stage canvas { display: block; width: 100%; height: 100%; outline: none; }
+.intro { position: absolute; left: 20px; top: 18px; max-width: 440px; pointer-events: none; }
+.intro h1 { font-family: var(--display); font-weight: 700; font-size: 34px; line-height: 1.05; margin: 0 0 6px; text-wrap: balance; text-shadow: 0 1px 0 rgba(255,255,255,0.6); }
+.intro p { margin: 0; font-size: 14px; max-width: 46ch; opacity: 0.85; }
+
+.windhud {
+  position: absolute; right: 16px; top: 16px;
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(255,255,255,0.88); border: 1px solid var(--line); border-radius: 10px;
+  padding: 8px 12px; pointer-events: none;
+}
+.windhud .dial { width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid var(--ink); display: grid; place-items: center; }
+.windhud svg { width: 26px; height: 26px; transition: transform 0.1s linear; }
+.windhud b { display: block; font-family: var(--display); font-size: 20px; line-height: 1; letter-spacing: 0.02em; }
+.windhud span { font-size: 12px; color: var(--muted); }
+.alert {
+  position: absolute; left: 50%; top: 22%; transform: translateX(-50%);
+  background: var(--warn); color: #fff; font-family: var(--display); font-weight: 600;
+  font-size: 22px; letter-spacing: 0.04em; padding: 6px 16px; border-radius: 8px;
+  opacity: 0; transition: opacity 0.25s; pointer-events: none; white-space: nowrap;
+}
+.alert.show { opacity: 1; }
+
+.bar {
+  position: absolute; left: 16px; right: 16px; bottom: 14px;
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  background: rgba(255,255,255,0.9); border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px;
+}
+.bar button {
+  font: 500 13px var(--body); color: var(--ink); background: var(--paper);
+  border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; cursor: pointer;
+}
+.bar button:hover { border-color: var(--lagoon); }
+.bar button[aria-pressed="true"] { background: var(--ink); color: #fff; border-color: var(--ink); }
+.bar button.play { background: var(--sun); color: #fff; border-color: var(--sun); min-width: 76px; font-weight: 600; }
+.bar button:focus-visible, .seg button:focus-visible, input:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
+.bar .timeline { flex: 1 1 180px; display: flex; align-items: center; gap: 8px; min-width: 160px; }
+.bar .timeline input { flex: 1; accent-color: var(--lagoon); }
+.bar .time { font-variant-numeric: tabular-nums; font-size: 13px; color: var(--muted); min-width: 44px; text-align: right; }
+.bar .group { display: flex; gap: 4px; align-items: center; }
+.bar .label { font-size: 12px; color: var(--muted); margin-right: 2px; }
+.loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-size: 14px; pointer-events: none; }
+
+.panel { background: var(--paper); border-left: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
+.panel-scroll { overflow-y: auto; padding: 22px 24px 16px; flex: 1; }
+.kicker { font-family: var(--display); text-transform: uppercase; letter-spacing: 0.12em; font-size: 13px; font-weight: 600; color: var(--lagoon); margin: 0 0 4px; }
+.kicker.bad { color: var(--warn); }
+.panel h2 { font-family: var(--display); font-weight: 700; font-size: 29px; line-height: 1.05; margin: 0 0 10px; text-wrap: balance; }
+.panel p { margin: 0 0 14px; max-width: 65ch; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; border: 1.5px solid var(--ink); border-radius: 8px; overflow: hidden; margin: 0 0 14px; }
+.seg button { font: 600 13px var(--body); padding: 8px 6px; border: 0; background: var(--paper); color: var(--ink); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+.seg button + button { border-left: 1.5px solid var(--ink); }
+.field { display: grid; gap: 4px; margin: 0 0 16px; }
+.field label { font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; }
+.field label output { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+.field input { accent-color: var(--lagoon); width: 100%; }
+.steps { list-style: none; padding: 0; margin: 0 0 16px; display: grid; gap: 2px; counter-reset: s; }
+.steps li {
+  counter-increment: s; display: grid; grid-template-columns: 26px 1fr; gap: 8px; align-items: start;
+  padding: 7px 8px; border-radius: 6px; font-size: 14px; color: var(--muted); cursor: pointer;
+}
+.steps li::before {
+  content: counter(s); width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid currentColor;
+  display: grid; place-items: center; font-size: 12px; font-weight: 600;
+}
+.steps li.done { color: var(--ink); }
+.steps li.active { background: var(--mist); color: var(--ink); font-weight: 600; }
+.steps li.active::before { background: var(--sun); border-color: var(--sun); color: #fff; }
+.mode-bad .steps li.active::before { background: var(--warn); border-color: var(--warn); }
+.plate { border: 1.5px solid var(--ink); border-radius: 6px; overflow: hidden; margin: 0 0 14px; }
+.plate-head { background: var(--ink); color: #fff; font-family: var(--display); letter-spacing: 0.14em; text-transform: uppercase; font-size: 12px; padding: 5px 12px; }
+.plate .grid { display: grid; grid-template-columns: 1fr 1fr; }
+.plate .cell { padding: 8px 12px; border-top: 1px solid var(--line); }
+.plate .cell:nth-child(odd) { border-right: 1px solid var(--line); }
+.plate .cell:nth-child(-n+2) { border-top: 0; }
+.plate .cell span { display: block; font-size: 12px; color: var(--muted); }
+.plate .cell b { font-family: var(--display); font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+.legend { font-size: 13px; color: var(--muted); display: grid; gap: 4px; margin: 0 0 8px; }
+.legend i { display: inline-block; width: 18px; height: 3px; vertical-align: middle; margin-right: 6px; background: #fff; border: 1px solid #9fb4b9; }
+.legend i.buoy { width: 10px; height: 10px; border-radius: 50%; background: var(--sun); border: 0; }
+.legend i.wind { background: #7fc6e6; border: 0; }
+.foot { font-size: 12px; color: var(--muted); padding: 10px 24px 14px; border-top: 1px solid var(--line); margin: 0; }
+.foot a { color: var(--lagoon); }
+.back { display: inline-block; font-size: 13px; color: var(--lagoon); text-decoration: none; margin: 0 0 14px; }
+.back:hover { text-decoration: underline; }
+.see-also { font-size: 13px; color: var(--muted); margin: 4px 0 0; }
+.see-also a { color: var(--lagoon); }
+
+@media (max-width: 860px) {
+  .app { grid-template-columns: 1fr; grid-template-rows: 66vh auto; height: auto; }
+  html, body { height: auto; }
+  .panel { border-left: 0; border-top: 1px solid var(--line); }
+  .intro { right: 128px; left: 14px; top: 12px; }
+  .windhud span { display: none; }
+  .bar .label { display: none; }
+  .intro h1 { font-size: 24px; }
+  .intro p { display: none; }
+  .windhud { padding: 6px 8px; }
+  .windhud .dial { width: 36px; height: 36px; }
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <section class="stage" id="stage" aria-label="3D animation of a seaplane landing in a crosswind">
+    <div class="loading" id="loading">Loading the 3D scene…</div>
+    <div class="intro">
+      <h1>Landing a seaplane in a crosswind</h1>
+      <p>Wind blows from the left across the landing lane. Watch how the pilot keeps the floats from touching down sideways.</p>
+    </div>
+    <div class="windhud" aria-hidden="true">
+      <div class="dial"><svg id="windArrow" viewBox="0 0 24 24"><path d="M12 3 L12 21 M12 21 L6 15 M12 21 L18 15" fill="none" stroke="#0d2b33" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div><b id="hudWind">15 kt</b><span>wind, from the left</span></div>
+    </div>
+    <div class="alert" id="alert">Downwind float digs in</div>
+    <div class="bar">
+      <button type="button" class="play" id="btnPlay">Pause</button>
+      <button type="button" id="btnRestart">Restart</button>
+      <div class="timeline">
+        <input type="range" id="scrub" min="0" max="100" value="0" step="1" aria-label="Animation timeline">
+        <span class="time" id="time">0.0 s</span>
+      </div>
+      <div class="group" role="group" aria-label="Camera">
+        <span class="label">Camera</span>
+        <button type="button" data-cam="chase" aria-pressed="true">Behind</button>
+        <button type="button" data-cam="top" aria-pressed="false">Above</button>
+        <button type="button" data-cam="side" aria-pressed="false">Side</button>
+        <button type="button" data-cam="free" aria-pressed="false">Free</button>
+      </div>
+      <div class="group" role="group" aria-label="Playback speed">
+        <button type="button" data-speed="0.5" aria-pressed="false">0.5×</button>
+        <button type="button" data-speed="1" aria-pressed="true">1×</button>
+      </div>
+    </div>
+  </section>
+
+  <aside class="panel">
+    <div class="panel-scroll">
+      <a class="back" href="../../#projects">← Back to portfolio</a>
+      <div class="seg" role="group" aria-label="Pilot technique">
+        <button type="button" id="modeGood" aria-pressed="true">Pilot corrects</button>
+        <button type="button" id="modeBad" aria-pressed="false">No correction</button>
+      </div>
+      <div class="field">
+        <label for="wind">Crosswind strength <output id="windOut">15 kt</output></label>
+        <input type="range" id="wind" min="0" max="25" step="1" value="15">
+      </div>
+      <div aria-live="polite">
+        <p class="kicker" id="pKicker">Step 1 of 5</p>
+        <h2 id="pTitle">Approach: crab into the wind</h2>
+        <p id="pText"></p>
+      </div>
+      <ol class="steps" id="steps"></ol>
+      <div class="plate">
+        <div class="plate-head">Live readout</div>
+        <div class="grid">
+          <div class="cell"><span>Speed</span><b id="rSpeed">0 kt</b></div>
+          <div class="cell"><span>Height</span><b id="rHeight">0 ft</b></div>
+          <div class="cell"><span>Crab angle (nose vs track)</span><b id="rCrab">0°</b></div>
+          <div class="cell"><span>Bank</span><b id="rBank">0°</b></div>
+        </div>
+      </div>
+      <div class="legend">
+        <div><i class="buoy"></i>Orange buoys mark the landing lane</div>
+        <div><i></i>White line is the path over the water</div>
+        <div><i class="wind"></i>Blue streaks show the wind</div>
+      </div>
+      <p class="see-also">Want to know the aircraft itself? <a href="../twin-otter/">Explore the Twin Otter seaplane in 3D</a>.</p>
+    </div>
+    <p class="foot">Simplified animation for learning, not a flight-training aid. Speeds and angles are rounded for clarity. Technique based on the <a href="https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/seaplane_handbook/faa-h-8083-23-1.pdf">FAA seaplane handbook</a>.</p>
+  </aside>
+</div>
+
+<!-- three.js r128 (MIT), shared with the Twin Otter explorer -->
+<script src="../twin-otter/vendor/three.min.js"></script>
+<script src="../twin-otter/vendor/OrbitControls.js"></script>
+<script>
+(function () {
+  "use strict";
+  var el = function (id) { return document.getElementById(id); };
+  var DEG = Math.PI / 180;
+
+  /* ---------- Step content ---------- */
+  var STEPS = {
+    good: [
+      ["Approach: crab into the wind", "The nose points slightly into the wind, so the aircraft's path stays on the landing lane even though the wind pushes from the left. From above you can see the nose and the path point in different directions."],
+      ["Flare: wing low, nose straight", "Just before touching the water, the pilot straightens the nose with the rudder and lowers the upwind (left) wing. The gentle sideways slip cancels the wind's drift."],
+      ["Touchdown: upwind float first", "The left float meets the water first, with no sideways slide. Then the wings level and the right float settles. The floats skim on the step at first."],
+      ["Water run: arc downwind", "While slowing down, the pilot curves gently away from the wind. The outward force of the turn balances the wind's push on the tall tail and the high wing."],
+      ["Slow taxi: weathervane into wind", "At low speed the big tail swings the nose round into the wind, like a weathervane. The seaplane ends up facing the wind, ready to taxi."]
+    ],
+    bad: [
+      ["Approach: no correction", "The nose points straight down the lane, but nothing counters the wind. The aircraft slowly drifts sideways off its path. Watch the white line leave the buoys."],
+      ["Flare: still drifting", "The wings stay level and the nose stays straight, so the aircraft is still sliding sideways as it nears the water."],
+      ["Touchdown: sliding sideways", "The floats hit the water while moving sideways. Water grabs the downwind (right) float, it digs in, and the aircraft lurches onto that side."],
+      ["Waterloop", "Drag on the dug-in float whips the aircraft round towards the wind. In stronger wind or rougher water, this can tip a seaplane over."],
+      ["Stopped, off the lane", "The aircraft has spun round and ended up well off the landing lane. This is why pilots never let a seaplane touch down sliding sideways."]
+    ]
+  };
+
+  var mode = "good";
+  var windKt = 15;
+
+  /* ---------- Simulation (precomputed so the timeline can be scrubbed) ---------- */
+  var DT = 1 / 60, T_END = 19, T_A = 7, T_TD = 8.6;
+  var FLOAT_Y = -0.19, FLOAT_Z = 1.55;
+  function contactY(roll) {
+    var c = Math.cos(roll), s = Math.sin(roll);
+    var yl = FLOAT_Y * c - (-FLOAT_Z) * s, yr = FLOAT_Y * c - FLOAT_Z * s;
+    return -Math.min(yl, yr);
+  }
+  function ease(u) { u = Math.max(0, Math.min(1, u)); return u * u * (3 - 2 * u); }
+
+  function simulate() {
+    var V0 = 38, w = windKt * 0.5144;
+    var crab = Math.atan2(w, V0);
+    var bankMax = Math.min(crab * 0.9, 14 * DEG);
+    var out = [];
+    var x = 0, z = 0, yaw = 0, roll = 0, pitch = 0, speed = V0, track = 0, y = 28;
+    var drift = 0; // sideways speed for the uncorrected case
+    var kBad = Math.min(1, windKt / 12);            // how violent the uncorrected touchdown is
+    var arc = 35 * DEG * Math.min(1, windKt / 10);   // size of the downwind arc
+    var vane = windKt >= 3 ? 90 * DEG : null;        // weathervane heading (none in calm air)
+    var events = { left: -1, right: -1, alert: -1 };
+    var n = Math.round(T_END / DT);
+    for (var i = 0; i <= n; i++) {
+      var t = i * DT, phase = 0, onWater = false;
+      if (t < T_A) {
+        phase = 0;
+        speed = V0;
+        y = 2 + 26 * Math.pow(1 - t / T_A, 1.4);
+        pitch = 0.5 * DEG;
+        if (mode === "good") { yaw = crab; roll = 0; track = 0; }
+        else { yaw = 0; roll = 0; drift = w * 0.55; }
+      } else if (t < T_TD) {
+        phase = 1;
+        var s = ease((t - T_A) / (T_TD - T_A));
+        speed = V0 - 6 * s;
+        pitch = 4.5 * DEG * s;
+        if (mode === "good") {
+          yaw = crab * (1 - s);
+          roll = -bankMax * s;
+          track = 0;
+        } else { yaw = 0; roll = 0; drift = w * 0.55; }
+        y = 2 + (contactY(roll) - 2) * s;
+      } else {
+        onWater = true;
+        var tw = t - T_TD;
+        if (mode === "good") {
+          if (events.left < 0) events.left = i;
+          if (tw < 0.7) { roll = -bankMax * (1 - ease(tw / 0.7)); }
+          else { roll = 0; if (events.right < 0) events.right = i; }
+          speed = Math.max(0.6, speed - speed * 0.32 * DT - 0.15 * DT);
+          pitch = (tw < 2.5 ? 4.5 - 2.5 * ease(tw / 2.5) : 2 - 2 * ease((tw - 2.5) / 3)) * DEG;
+          if (t < 13.2) {
+            if (tw > 0.7) yaw = Math.max(-arc, yaw - 11 * DEG * DT);
+            phase = tw < 0.9 ? 2 : 3;
+          } else {
+            if (vane !== null) yaw += (vane - yaw) * Math.min(1, 0.9 * DT);
+            phase = 4;
+          }
+          track = yaw;
+          drift = 0;
+        } else {
+          if (events.right < 0) { events.right = i; events.alert = i; }
+          // downwind (right) float digs in: roll to the right, then settle with a wobble
+          roll = kBad * 17 * DEG * Math.sin(Math.min(tw, 3.2) / 3.2 * Math.PI) * Math.exp(-tw * 0.25);
+          if (tw > 3.4 && events.left < 0) events.left = i;
+          // waterloop: nose whips toward the wind
+          var target = 95 * DEG * kBad;
+          yaw += (target - yaw) * Math.min(1, (tw < 2 ? 2.2 : 0.8) * DT);
+          speed = Math.max(0.4, speed - speed * 0.85 * DT);
+          drift = Math.max(0, drift - drift * 0.9 * DT);
+          pitch = Math.max(0, 4.5 - 4.5 * ease(tw / 1.2)) * DEG;
+          track = track + (yaw * 0.55 - track) * Math.min(1, 1.6 * DT);
+          phase = tw < 0.8 ? 2 : (t < 13.5 ? 3 : 4);
+        }
+        y = contactY(roll);
+      }
+      // move along the track; the wind adds sideways drift (toward +z) when uncorrected
+      x += Math.cos(track) * speed * DT;
+      z += -Math.sin(track) * speed * DT + drift * DT;
+      out.push({ t: t, x: x, y: y, z: z, yaw: yaw, roll: roll, pitch: pitch, speed: speed, track: track, phase: phase, water: onWater });
+    }
+    // put the touchdown point at x = 0
+    var x0 = out[Math.round(T_TD / DT)].x;
+    out.forEach(function (st) { st.x -= x0; });
+    return { states: out, events: events };
+  }
+  var sim = simulate();
+
+  /* ---------- Panel ---------- */
+  var stepsBox = el("steps");
+  function buildSteps() {
+    stepsBox.innerHTML = "";
+    STEPS[mode].forEach(function (s, i) {
+      var li = document.createElement("li");
+      li.textContent = s[0];
+      li.tabIndex = 0;
+      li.addEventListener("click", function () { jumpToPhase(i); });
+      li.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); jumpToPhase(i); } });
+      stepsBox.appendChild(li);
+    });
+  }
+  buildSteps();
+  var shownPhase = -1;
+  function showPhase(p) {
+    if (p === shownPhase) return;
+    shownPhase = p;
+    var s = STEPS[mode][p];
+    el("pKicker").textContent = (mode === "good" ? "Step " : "What goes wrong · step ") + (p + 1) + " of 5";
+    el("pKicker").className = "kicker" + (mode === "bad" ? " bad" : "");
+    el("pTitle").textContent = s[0];
+    el("pText").textContent = s[1];
+    Array.prototype.forEach.call(stepsBox.children, function (li, i) {
+      li.className = i === p ? "active" : (i < p ? "done" : "");
+    });
+  }
+  showPhase(0);
+
+  /* ---------- 3D setup ---------- */
+  if (typeof THREE === "undefined" || !THREE.OrbitControls) {
+    el("loading").textContent = "The 3D scene could not load. Check your connection and refresh.";
+    return;
+  }
+  var stage = el("stage");
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  stage.insertBefore(renderer.domElement, stage.firstChild);
+  el("loading").remove();
+
+  var scene = new THREE.Scene();
+  (function () {
+    var c = document.createElement("canvas"); c.width = 2; c.height = 256;
+    var g = c.getContext("2d"), grd = g.createLinearGradient(0, 0, 0, 256);
+    grd.addColorStop(0, "#5fb8d6"); grd.addColorStop(0.55, "#bfe6ef"); grd.addColorStop(1, "#eaf7f8");
+    g.fillStyle = grd; g.fillRect(0, 0, 2, 256);
+    var tex = new THREE.CanvasTexture(c); tex.encoding = THREE.sRGBEncoding;
+    scene.background = tex;
+  })();
+  scene.fog = new THREE.Fog(0xd6eff3, 160, 520);
+
+  var camera = new THREE.PerspectiveCamera(42, 1, 0.1, 1200);
+  var controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.minDistance = 10;
+  controls.maxDistance = 160;
+  controls.maxPolarAngle = Math.PI * 0.495;
+  controls.enabled = true;
+
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x4fb3b0, 0.75));
+  var sunL = new THREE.DirectionalLight(0xfff3e0, 1.0); sunL.position.set(30, 50, 10); scene.add(sunL);
+  var fillL = new THREE.DirectionalLight(0xcfeffa, 0.35); fillL.position.set(-30, 15, -25); scene.add(fillL);
+
+  function M(color, opts) {
+    var o = { color: color, roughness: 0.5, metalness: 0.05 };
+    for (var k in opts) o[k] = opts[k];
+    return new THREE.MeshStandardMaterial(o);
+  }
+  var white = M(0xf7f9fa, { roughness: 0.35 }), teal = M(0x0e7c86, { roughness: 0.4 }), orange = M(0xf26b1d, { roughness: 0.4 });
+  var glass = M(0x16323a, { roughness: 0.1, metalness: 0.4 }), alu = M(0xc7d0d4, { roughness: 0.35, metalness: 0.55 });
+  var dark = M(0x2b3236, { roughness: 0.6 }), grey = M(0x9aa6ab, { roughness: 0.5, metalness: 0.3 }), tipYellow = M(0xf2c01d, { roughness: 0.5 });
+
+  function extrude(shape, depth, bevel, seg) {
+    var g = new THREE.ExtrudeGeometry(shape, { depth: depth, bevelEnabled: bevel > 0, bevelThickness: bevel, bevelSize: bevel, bevelSegments: seg || 3, curveSegments: 18 });
+    g.translate(0, 0, -depth / 2);
+    return g;
+  }
+  function rod(a, b, r, mat) {
+    var A = new THREE.Vector3(a[0], a[1], a[2]), B = new THREE.Vector3(b[0], b[1], b[2]);
+    var dir = new THREE.Vector3().subVectors(B, A), len = dir.length();
+    var m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, 10), mat);
+    m.position.copy(A).addScaledVector(dir, 0.5);
+    m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+    return m;
+  }
+  function box(w, h, d, mat, x, y, z) { var m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); return m; }
+
+  /* ---------- Twin Otter on floats (simplified) ---------- */
+  var plane = new THREE.Group();
+  plane.rotation.order = "YXZ";
+  scene.add(plane);
+  var model = new THREE.Group();
+  plane.add(model);
+
+  var fus = new THREE.Group(); fus.position.y = 1.6; model.add(fus);
+  var fs = new THREE.Shape();
+  fs.moveTo(-7.6, 1.1); fs.lineTo(-7.6, 1.55); fs.lineTo(-2.0, 1.75); fs.lineTo(4.9, 1.75);
+  fs.quadraticCurveTo(5.6, 1.75, 6.4, 1.2); fs.quadraticCurveTo(7.1, 0.85, 7.2, 0.55);
+  fs.quadraticCurveTo(7.2, 0.1, 6.4, 0.05); fs.lineTo(-2.4, 0.05); fs.lineTo(-7.6, 1.1);
+  fus.add(new THREE.Mesh(extrude(fs, 1.25, 0.2, 5), white));
+  var ws = box(1.1, 0.04, 1.15, glass, 5.69, 1.8, 0); ws.rotation.z = -0.351; fus.add(ws);
+  [-1, 1].forEach(function (s) {
+    fus.add(box(0.75, 0.42, 0.02, glass, 5.25, 1.3, s * 0.835));
+    for (var i = 0; i < 7; i++) fus.add(box(0.46, 0.4, 0.02, glass, -1.9 + i * 0.95, 1.27, s * 0.835));
+    fus.add(box(10.9, 0.12, 0.02, teal, 0.85, 0.6, s * 0.836));
+    fus.add(box(10.1, 0.04, 0.02, orange, 1.25, 0.45, s * 0.836));
+  });
+  var af = new THREE.Shape();
+  af.moveTo(-1.0, 0.02); af.quadraticCurveTo(-0.2, 0.2, 0.7, 0.16); af.quadraticCurveTo(1.0, 0.12, 1.0, 0.0);
+  af.quadraticCurveTo(0.9, -0.08, 0.5, -0.08); af.lineTo(-1.0, -0.01);
+  var wing = new THREE.Mesh(extrude(af, 19.8, 0.03, 2), white); wing.position.set(2.6, 3.63, 0); model.add(wing);
+  [-1, 1].forEach(function (s) {
+    model.add(box(1.9, 0.06, 0.25, teal, 2.6, 3.7, s * 9.85));
+    model.add(rod([2.6, 2.05, s * 0.83], [2.6, 3.58, s * 4.6], 0.05, grey));
+  });
+  var props = [];
+  [-1, 1].forEach(function (s) {
+    var z = s * 2.9;
+    var nac = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.3, 3.3, 20), white);
+    nac.rotation.z = Math.PI / 2; nac.position.set(4.0, 3.48, z); model.add(nac);
+    var prop = new THREE.Group(); prop.position.set(5.78, 3.48, z); model.add(prop);
+    var spinner = new THREE.Mesh(new THREE.ConeGeometry(0.24, 0.55, 20), white);
+    spinner.rotation.z = -Math.PI / 2; spinner.position.x = 0.22; prop.add(spinner);
+    for (var i = 0; i < 3; i++) {
+      var blade = new THREE.Group(); blade.rotation.x = i * (Math.PI * 2 / 3);
+      var b = box(0.05, 1.12, 0.17, dark, 0.05, 0.68, 0); b.rotation.y = 0.35; blade.add(b);
+      blade.add(box(0.052, 0.14, 0.17, tipYellow, 0.05, 1.22, 0));
+      prop.add(blade);
+    }
+    // translucent disc so spinning props read at speed
+    var disc = new THREE.Mesh(new THREE.CircleGeometry(1.3, 32), new THREE.MeshBasicMaterial({ color: 0x2b3236, transparent: true, opacity: 0.12, side: THREE.DoubleSide }));
+    disc.rotation.y = Math.PI / 2; disc.position.x = 0.05; prop.add(disc);
+    props.push(prop);
+  });
+  var fin = new THREE.Shape();
+  fin.moveTo(-0.2, 0); fin.lineTo(2.6, 0); fin.lineTo(0.95, 2.5); fin.lineTo(0.0, 2.5); fin.lineTo(-0.2, 0.4); fin.lineTo(-0.2, 0);
+  var finMesh = new THREE.Mesh(extrude(fin, 0.14, 0.04, 2), teal); finMesh.position.set(-7.75, 3.2, 0); model.add(finMesh);
+  model.add(box(1.9, 0.1, 6.3, white, -7.0, 3.42, 0));
+  [-1, 1].forEach(function (s) { model.add(box(0.9, 0.55, 0.05, teal, -7.15, 3.15, s * 2.2)); });
+  var fl = new THREE.Shape();
+  fl.moveTo(6.2, 0.62); fl.quadraticCurveTo(6.35, 0.22, 5.2, 0.05); fl.lineTo(1.0, 0.0); fl.lineTo(1.0, 0.13);
+  fl.lineTo(-5.4, 0.45); fl.lineTo(-5.6, 0.62); fl.lineTo(6.2, 0.62);
+  var floatGeo = extrude(fl, 0.5, 0.14, 4);
+  var floatMats = [];
+  [-1, 1].forEach(function (s) {
+    var z = s * FLOAT_Z;
+    var fm = alu.clone(); fm.emissive = new THREE.Color(0x000000); floatMats.push(fm);
+    var f = new THREE.Mesh(floatGeo, fm); f.position.set(0, -0.05, z); model.add(f);
+    model.add(rod([3.6, 0.7, z], [3.6, 1.55, s * 0.55], 0.06, grey));
+    model.add(rod([0.3, 0.72, z], [0.3, 1.55, s * 0.55], 0.06, grey));
+    model.add(rod([3.6, 0.7, z], [1.9, 1.55, s * 0.55], 0.045, grey));
+  });
+  model.add(rod([3.6, 0.72, -1.55], [3.6, 0.72, 1.55], 0.045, grey));
+  model.add(rod([0.3, 0.74, -1.55], [0.3, 0.74, 1.55], 0.045, grey));
+
+  /* ---------- Water, lane buoys, island ---------- */
+  var waterGeo = new THREE.PlaneGeometry(1400, 1400, 120, 120);
+  waterGeo.rotateX(-Math.PI / 2);
+  var water = new THREE.Mesh(waterGeo, M(0x1fa9a8, { roughness: 0.55, metalness: 0.05, transparent: true, opacity: 0.95 }));
+  water.position.x = -100;
+  scene.add(water);
+  var wPos = waterGeo.attributes.position, baseXZ = new Float32Array(wPos.count * 2);
+  for (var wi = 0; wi < wPos.count; wi++) { baseXZ[wi * 2] = wPos.getX(wi); baseXZ[wi * 2 + 1] = wPos.getZ(wi); }
+
+  var buoyGeo = new THREE.SphereGeometry(0.55, 14, 10);
+  for (var bx = -260; bx <= 200; bx += 20) {
+    [-14, 14].forEach(function (bz) {
+      var b = new THREE.Mesh(buoyGeo, orange); b.position.set(bx, 0.15, bz); scene.add(b);
+    });
+  }
+  var sand = new THREE.Mesh(new THREE.CircleGeometry(16, 40), M(0xf2e3c2, { roughness: 0.9 }));
+  sand.rotation.x = -Math.PI / 2; sand.scale.set(1.8, 0.8, 1); sand.position.set(120, 0.08, -110); scene.add(sand);
+  var trunkMat = M(0x8a6a45, { roughness: 0.9 }), leafMat = M(0x2f8f4e, { roughness: 0.7, side: THREE.DoubleSide });
+  [[112, -110, 0.2], [124, -106, -0.25], [130, -114, 0.1], [104, -113, -0.15]].forEach(function (p) {
+    var palm = new THREE.Group();
+    var trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.4, 9, 8), trunkMat); trunk.position.y = 4.5; palm.add(trunk);
+    for (var i = 0; i < 6; i++) {
+      var leaf = new THREE.Mesh(new THREE.PlaneGeometry(5, 1.1), leafMat);
+      leaf.position.set(Math.cos(i) * 2, 9, Math.sin(i) * 2); leaf.rotation.y = -i; leaf.rotation.z = -0.5; palm.add(leaf);
+    }
+    palm.rotation.z = p[2]; palm.position.set(p[0], 0, p[1]); scene.add(palm);
+  });
+
+  /* ---------- Ground track line ---------- */
+  var trackGeo = new THREE.BufferGeometry();
+  var trackLine = new THREE.Line(trackGeo, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9 }));
+  scene.add(trackLine);
+  function buildTrack() {
+    var arr = new Float32Array(sim.states.length * 3);
+    sim.states.forEach(function (s, i) { arr[i * 3] = s.x; arr[i * 3 + 1] = 0.22; arr[i * 3 + 2] = s.z; });
+    trackGeo.setAttribute("position", new THREE.BufferAttribute(arr, 3));
+    trackGeo.computeBoundingSphere();
+  }
+  buildTrack();
+
+  /* ---------- Wind streaks ---------- */
+  var N_STREAK = 260;
+  var streakPos = new Float32Array(N_STREAK * 6), streakSeed = [];
+  var streakGeo = new THREE.BufferGeometry();
+  streakGeo.setAttribute("position", new THREE.BufferAttribute(streakPos, 3));
+  var streaks = new THREE.LineSegments(streakGeo, new THREE.LineBasicMaterial({ color: 0x7fc6e6, transparent: true, opacity: 0.7 }));
+  streaks.frustumCulled = false;
+  scene.add(streaks);
+  for (var si = 0; si < N_STREAK; si++) streakSeed.push({ x: (Math.random() - 0.5) * 140, y: Math.random() * 32 + 0.6, z: (Math.random() - 0.5) * 110 });
+
+  /* ---------- Spray particles ---------- */
+  var N_P = 700, pPos = new Float32Array(N_P * 3), pVel = new Float32Array(N_P * 3), pLife = new Float32Array(N_P), pNext = 0;
+  for (var pi = 0; pi < N_P; pi++) pPos[pi * 3 + 1] = -50;
+  var pGeo = new THREE.BufferGeometry();
+  pGeo.setAttribute("position", new THREE.BufferAttribute(pPos, 3));
+  var spray = new THREE.Points(pGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.45, transparent: true, opacity: 0.85, depthWrite: false }));
+  spray.frustumCulled = false;
+  scene.add(spray);
+  function emit(p, n, power, side) {
+    for (var i = 0; i < n; i++) {
+      var k = pNext; pNext = (pNext + 1) % N_P;
+      pPos[k * 3] = p.x + (Math.random() - 0.5) * 2;
+      pPos[k * 3 + 1] = Math.max(0.05, p.y);
+      pPos[k * 3 + 2] = p.z + (Math.random() - 0.5) * 0.8;
+      pVel[k * 3] = (Math.random() - 0.5) * 3 * power;
+      pVel[k * 3 + 1] = (2 + Math.random() * 4) * power;
+      pVel[k * 3 + 2] = (side * (1 + Math.random() * 3) + (Math.random() - 0.5) * 2) * power;
+      pLife[k] = 0.8 + Math.random() * 0.8;
+    }
+  }
+  function stepParticles(dt) {
+    for (var i = 0; i < N_P; i++) {
+      if (pLife[i] <= 0) continue;
+      pLife[i] -= dt;
+      pVel[i * 3 + 1] -= 9.8 * dt;
+      pPos[i * 3] += pVel[i * 3] * dt;
+      pPos[i * 3 + 1] += pVel[i * 3 + 1] * dt;
+      pPos[i * 3 + 2] += pVel[i * 3 + 2] * dt;
+      if (pPos[i * 3 + 1] < 0 || pLife[i] <= 0) { pLife[i] = 0; pPos[i * 3 + 1] = -50; }
+    }
+    pGeo.attributes.position.needsUpdate = true;
+  }
+  function clearParticles() { for (var i = 0; i < N_P; i++) { pLife[i] = 0; pPos[i * 3 + 1] = -50; } pGeo.attributes.position.needsUpdate = true; }
+
+  /* ---------- Playback state ---------- */
+  var idx = 0, playing = true, speedMul = 1, camMode = "chase";
+  var scrub = el("scrub");
+  scrub.max = String(sim.states.length - 1);
+  var leftFloatLocal = new THREE.Vector3(-1, -0.15, -FLOAT_Z), rightFloatLocal = new THREE.Vector3(-1, -0.15, FLOAT_Z);
+  var tmpA = new THREE.Vector3(), tmpB = new THREE.Vector3();
+
+  function setPlaying(p) {
+    playing = p;
+    el("btnPlay").textContent = p ? "Pause" : "Play";
+  }
+  function restart() { idx = 0; prevIdx = 0; clearParticles(); setPlaying(true); camSnap = true; }
+  function jumpToPhase(p) {
+    for (var i = 0; i < sim.states.length; i++) if (sim.states[i].phase === p) { idx = i; prevIdx = i; break; }
+    clearParticles(); camSnap = true;
+  }
+  function rerun() {
+    var keepT = idx * DT;
+    sim = simulate();
+    buildTrack();
+    scrub.max = String(sim.states.length - 1);
+    idx = Math.min(Math.round(keepT / DT), sim.states.length - 1);
+    prevIdx = idx;
+    shownPhase = -1;
+    clearParticles();
+  }
+
+  el("btnPlay").addEventListener("click", function () {
+    if (!playing && idx >= sim.states.length - 1) { restart(); return; }
+    setPlaying(!playing);
+  });
+  el("btnRestart").addEventListener("click", restart);
+  scrub.addEventListener("input", function () { idx = +scrub.value; prevIdx = idx; setPlaying(false); clearParticles(); });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-cam]"), function (b) {
+    b.addEventListener("click", function () { setCam(b.getAttribute("data-cam")); });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-speed]"), function (b) {
+    b.addEventListener("click", function () {
+      speedMul = +b.getAttribute("data-speed");
+      Array.prototype.forEach.call(document.querySelectorAll("[data-speed]"), function (o) { o.setAttribute("aria-pressed", o === b ? "true" : "false"); });
+    });
+  });
+  function setMode(m) {
+    mode = m;
+    el("modeGood").setAttribute("aria-pressed", m === "good" ? "true" : "false");
+    el("modeBad").setAttribute("aria-pressed", m === "bad" ? "true" : "false");
+    el("app").classList.toggle("mode-bad", m === "bad");
+    buildSteps();
+    rerun();
+    restart();
+  }
+  el("modeGood").addEventListener("click", function () { setMode("good"); });
+  el("modeBad").addEventListener("click", function () { setMode("bad"); });
+  el("wind").addEventListener("input", function () {
+    windKt = +this.value;
+    el("windOut").textContent = windKt + " kt";
+    el("hudWind").textContent = windKt + " kt";
+    rerun();
+  });
+
+  var camSnap = true;
+  function setCam(m) {
+    camMode = m;
+    Array.prototype.forEach.call(document.querySelectorAll("[data-cam]"), function (o) { o.setAttribute("aria-pressed", o.getAttribute("data-cam") === m ? "true" : "false"); });
+    if (m === "free") controls.target.copy(plane.position);
+    camSnap = true;
+  }
+  controls.addEventListener("start", function () { if (camMode !== "free") setCam("free"); });
+
+  function resize() {
+    var w = stage.clientWidth, h = stage.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / Math.max(h, 1);
+    camera.updateProjectionMatrix();
+  }
+  if (window.ResizeObserver) new ResizeObserver(resize).observe(stage); else window.addEventListener("resize", resize);
+  resize();
+
+  /* ---------- Frame loop ---------- */
+  var last = performance.now(), acc = 0, prevIdx = 0, lastPlanePos = new THREE.Vector3();
+  var desired = new THREE.Vector3(), camFwd = new THREE.Vector3(), camRight = new THREE.Vector3();
+
+  function frame(now) {
+    var dt = Math.min((now - last) / 1000, 0.05);
+    last = now;
+    var tSec = now / 1000;
+
+    if (playing) {
+      acc += dt * speedMul;
+      while (acc >= DT) { acc -= DT; if (idx < sim.states.length - 1) idx++; else { setPlaying(false); break; } }
+    }
+    var st = sim.states[idx];
+
+    // touchdown splashes and spray when the playhead crosses events
+    var ev = sim.events;
+    if (idx > prevIdx) {
+      if (ev.left > prevIdx && ev.left <= idx) { plane.localToWorld(tmpA.copy(leftFloatLocal)); emit(tmpA, mode === "good" ? 70 : 50, 1.2, -1); }
+      if (ev.right > prevIdx && ev.right <= idx) { plane.localToWorld(tmpB.copy(rightFloatLocal)); emit(tmpB, mode === "good" ? 60 : 160, mode === "good" ? 1.1 : 1.8, 1); }
+    }
+    if (st.water && st.speed > 6 && playing) {
+      var n = Math.round(st.speed / 6);
+      plane.localToWorld(tmpA.copy(leftFloatLocal)); emit(tmpA, n, Math.min(1, st.speed / 30), -1);
+      plane.localToWorld(tmpB.copy(rightFloatLocal)); emit(tmpB, n, Math.min(1, st.speed / 30), 1);
+    }
+    prevIdx = idx;
+    stepParticles(playing ? dt * speedMul : 0);
+
+    // aircraft pose
+    var bob = st.water && !reduceMotion ? Math.sin(tSec * 1.6) * 0.04 * Math.max(0, 1 - st.speed / 10) : 0;
+    plane.position.set(st.x, st.y + bob, st.z);
+    plane.rotation.set(st.roll, st.yaw, st.pitch);
+    props.forEach(function (p) { p.rotation.x += (st.speed > 3 ? 0.9 : 0.25) * (playing ? 1 : 0.15); });
+
+    // float highlight in the uncorrected case
+    var digging = mode === "bad" && windKt >= 3 && st.water && st.t - T_TD < 2.4;
+    floatMats[1].emissive.setHex(digging ? 0xc2361b : 0x000000);
+    floatMats[1].emissiveIntensity = digging ? 0.6 : 0;
+    el("alert").classList.toggle("show", digging);
+
+    // track line up to the current point
+    trackGeo.setDrawRange(0, idx + 1);
+
+    // water waves
+    if (!reduceMotion) {
+      for (var i = 0; i < wPos.count; i++) {
+        var x = baseXZ[i * 2], z = baseXZ[i * 2 + 1];
+        wPos.setY(i, Math.sin(x * 0.12 + tSec * 1.1) * 0.12 + Math.cos(z * 0.17 + tSec * 0.9) * 0.1);
+      }
+      wPos.needsUpdate = true;
+    }
+
+    // wind streaks around the aircraft, blowing toward +z
+    var windSpeed = windKt * 0.5144 * 1.6;
+    streaks.visible = windKt > 0;
+    for (var k = 0; k < N_STREAK; k++) {
+      var sd = streakSeed[k];
+      if (!reduceMotion) sd.z += windSpeed * dt;
+      if (sd.z > 55) sd.z -= 110;
+      var wx = st.x + sd.x, wy = sd.y, wz = st.z + sd.z, len = 1.2 + windKt * 0.18;
+      streakPos[k * 6] = wx; streakPos[k * 6 + 1] = wy; streakPos[k * 6 + 2] = wz - len;
+      streakPos[k * 6 + 3] = wx; streakPos[k * 6 + 4] = wy; streakPos[k * 6 + 5] = wz;
+    }
+    streakGeo.attributes.position.needsUpdate = true;
+
+    // camera
+    var target = plane.position;
+    if (camMode === "free") {
+      var delta = tmpA.subVectors(target, lastPlanePos);
+      camera.position.add(delta);
+      controls.target.add(delta);
+      controls.update();
+    } else {
+      if (camMode === "chase") {
+        var hd = st.water ? st.track : 0;
+        desired.set(target.x - Math.cos(hd) * 34, target.y + 9, target.z + Math.sin(hd) * 34);
+      } else if (camMode === "top") {
+        desired.set(target.x - 6, target.y + 70, target.z + 0.01);
+      } else {
+        desired.set(target.x + 4, target.y + 5, target.z - 40);
+      }
+      if (camSnap) { camera.position.copy(desired); camSnap = false; }
+      else camera.position.lerp(desired, 0.08);
+      camera.lookAt(target.x, target.y + 1.5, target.z);
+    }
+    lastPlanePos.copy(target);
+
+    renderer.render(scene, camera);
+
+    // wind arrow relative to the camera view
+    camera.getWorldDirection(camFwd); camFwd.y = 0; camFwd.normalize();
+    camRight.set(-camFwd.z, 0, camFwd.x);
+    var sx = camRight.z, sy = camFwd.z; // wind direction is +z
+    var ang = Math.atan2(sx, sy) * 180 / Math.PI;
+    el("windArrow").style.transform = "rotate(" + (ang + 180) + "deg)";
+
+    // panel
+    showPhase(st.phase);
+    scrub.value = String(idx);
+    el("time").textContent = st.t.toFixed(1) + " s";
+    el("rSpeed").textContent = Math.round(st.speed * 1.944) + " kt";
+    el("rHeight").textContent = st.water ? "0 ft" : Math.round(st.y * 3.281) + " ft";
+    var crabDeg = Math.round((st.yaw - st.track) / DEG);
+    el("rCrab").textContent = (st.water ? 0 : Math.abs(crabDeg)) + "°" + (!st.water && crabDeg > 0 ? " left" : "");
+    var bankDeg = Math.round(-st.roll / DEG);
+    el("rBank").textContent = Math.abs(bankDeg) + "°" + (bankDeg > 0 ? " left wing down" : (bankDeg < 0 ? " right wing down" : ""));
+
+    requestAnimationFrame(frame);
+  }
+  lastPlanePos.copy(new THREE.Vector3(sim.states[0].x, sim.states[0].y, sim.states[0].z));
+  plane.position.copy(lastPlanePos);
+  if (reduceMotion) setPlaying(false);
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

@@ -238,13 +238,11 @@ const Hero = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="mt-8 text-[clamp(2.15rem,8.6vw,4.6rem)] lg:text-[clamp(3rem,5vw,4.6rem)] font-bold tracking-[-0.045em] leading-[0.98] text-ink"
+              className="mt-8 text-[clamp(2.6rem,11vw,5.6rem)] lg:text-[clamp(3.25rem,5.4vw,5rem)] font-bold tracking-[-0.045em] leading-[0.98] text-ink"
             >
               Finance leader
               <br />
-              who builds with data
-              <br />
-              <span className="text-faint">and code.</span>
+              <span className="text-faint">who loves tech.</span>
             </motion.h1>
 
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.15 }} className="flex flex-wrap gap-3 mt-9">
@@ -268,8 +266,8 @@ const Hero = () => {
             </motion.div>
 
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.3 }} className="mt-14 md:mt-20">
-              <p className="text-[15px] md:text-base font-medium text-ink">Turning finance data into tools and dashboards</p>
-              <p className="text-[15px] md:text-base text-muted">from IFRS 16 models to 13-week cash-flow forecasts.</p>
+              <p className="text-[15px] md:text-base font-medium text-ink">Reporting, automated.</p>
+              <p className="text-[15px] md:text-base text-muted">Excel, Power BI and React, from ledger to dashboard.</p>
               <a href="#about" className="inline-flex items-center gap-1 mt-6 font-mono text-[11px] uppercase tracking-[0.08em] text-faint hover:text-ink transition-colors">
                 Scroll <ArrowDown className="w-3 h-3" />
               </a>

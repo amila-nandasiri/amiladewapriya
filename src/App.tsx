@@ -23,7 +23,7 @@ const LINKS = {
   email: "amiladnandasiri@gmail.com",
   phone: "+94 773 934329",
   github: "https://github.com/amila-nandasiri",
-  linkedin: "https://www.linkedin.com/in/amila-devapriya/",
+  linkedin: "https://www.linkedin.com/in/amila-dewapriya/",
   resume: "Resume.pdf"
 };
 

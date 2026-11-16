@@ -1,14 +1,19 @@
 import { motion } from "framer-motion";
 import {
-  ArrowRight,
+  ArrowDown,
   ArrowUpRight,
+  Briefcase,
   Download,
   Github,
+  GraduationCap,
+  House,
+  Layers,
   Linkedin,
   Mail,
-  Menu,
+  Moon,
   Phone,
-  X
+  Sun,
+  User
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 
@@ -20,7 +25,14 @@ const LINKS = {
   resume: "Resume.pdf"
 };
 
-const NAV = ["About", "Projects", "Experience", "Credentials", "Contact"];
+const NAV = [
+  { id: "top", label: "Home", icon: House },
+  { id: "about", label: "About", icon: User },
+  { id: "projects", label: "Projects", icon: Briefcase },
+  { id: "experience", label: "Experience", icon: Layers },
+  { id: "credentials", label: "Credentials", icon: GraduationCap },
+  { id: "contact", label: "Contact", icon: Mail }
+];
 
 // Fades content in as it scrolls into view
 const Reveal = ({ children, delay = 0 }: { children: ReactNode; delay?: number }) => (
@@ -34,75 +46,116 @@ const Reveal = ({ children, delay = 0 }: { children: ReactNode; delay?: number }
   </motion.div>
 );
 
-const SectionHeader = ({ index, label, title }: { index: string; label: string; title: string }) => (
+// A full-width hairline with a dot where it meets each side of the page frame
+const Rule = () => (
+  <div className="relative h-px bg-line" aria-hidden="true">
+    <span className="hidden md:block absolute left-0 top-0 -translate-x-1/2 -translate-y-1/2 w-[5px] h-[5px] rounded-full bg-ink" />
+    <span className="hidden md:block absolute right-0 top-0 translate-x-1/2 -translate-y-1/2 w-[5px] h-[5px] rounded-full bg-ink" />
+  </div>
+);
+
+const Label = ({ children, className = "" }: { children: ReactNode; className?: string }) => (
+  <p className={`font-mono text-[11px] uppercase tracking-[0.08em] text-faint ${className}`}>{children}</p>
+);
+
+const SectionHeader = ({ index, label, title, sub }: { index: string; label: string; title: string; sub: string }) => (
   <Reveal>
-    <div className="mb-12">
-      <p className="font-mono text-xs text-zinc-400 mb-3">
-        <span className="text-emerald-600">{index}</span> / {label}
-      </p>
-      <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-zinc-900">{title}</h2>
+    <div className="mb-14">
+      <Label className="mb-4">
+        ({index}) {label}
+      </Label>
+      <h2 className="text-4xl md:text-6xl font-bold tracking-[-0.04em] leading-[1.02] text-ink">
+        {title}
+        <br />
+        <span className="text-faint">{sub}</span>
+      </h2>
     </div>
   </Reveal>
 );
 
-const Navbar = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [open, setOpen] = useState(false);
-
+const useTheme = () => {
+  const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    document.documentElement.classList.toggle("dark", dark);
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", dark ? "#000000" : "#f4f4f5");
+  }, [dark]);
+  const toggle = () =>
+    setDark((d) => {
+      try {
+        localStorage.setItem("theme", d ? "light" : "dark");
+      } catch {
+        /* storage blocked: the toggle still works for this visit */
+      }
+      return !d;
+    });
+  return { dark, toggle };
+};
+
+// Which section is on screen, for the highlighted nav icon
+const useActiveSection = () => {
+  const [active, setActive] = useState("top");
+  useEffect(() => {
+    const els = NAV.map((n) => document.getElementById(n.id)).filter((e): e is HTMLElement => !!e);
+    const obs = new IntersectionObserver(
+      (entries) => entries.forEach((e) => e.isIntersecting && setActive(e.target.id)),
+      { rootMargin: "-45% 0px -50% 0px" }
+    );
+    els.forEach((e) => obs.observe(e));
+    return () => obs.disconnect();
   }, []);
+  return active;
+};
+
+const Navbar = () => {
+  const { dark, toggle } = useTheme();
+  const active = useActiveSection();
+  const pill = "bg-surface/80 backdrop-blur-md border border-line rounded-full shadow-[0_4px_20px_-8px_rgba(0,0,0,0.15)]";
 
   return (
-    <nav
-      className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
-        isScrolled || open ? "bg-white/85 backdrop-blur-md border-b border-zinc-200/70" : "bg-transparent"
-      }`}
-    >
-      <div className="max-w-6xl mx-auto px-6 h-16 flex justify-between items-center">
-        <a href="#top" className="flex items-center gap-2.5 font-semibold tracking-tight text-zinc-900">
-          {/* Phones: small round photo beside the name (the large one shows from tablet width up) */}
-          <img src="profile.jpg" alt="" className="md:hidden w-8 h-8 rounded-full object-cover object-top ring-1 ring-zinc-200" />
-          <span>
-            Amila Dewapriya<span className="text-emerald-600">.</span>
-          </span>
-        </a>
-        <div className="hidden md:flex items-center gap-8">
-          {NAV.map((item) => (
-            <a key={item} href={`#${item.toLowerCase()}`} className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors">
-              {item}
-            </a>
-          ))}
+    <nav className="fixed top-3 md:top-5 inset-x-0 z-50 flex justify-center gap-1 sm:gap-2 px-2" aria-label="Main">
+      <div className={`${pill} flex items-center p-1`}>
+        {NAV.map(({ id, label, icon: Icon }) => (
           <a
-            href={LINKS.resume}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm font-medium bg-zinc-900 text-white px-4 py-2 rounded-full hover:bg-zinc-700 transition-colors"
+            key={id}
+            href={`#${id}`}
+            aria-label={label}
+            className={`group relative grid place-items-center w-8 h-8 sm:w-9 sm:h-9 rounded-full transition-colors ${
+              active === id ? "bg-soft text-ink" : "text-muted hover:text-ink"
+            }`}
           >
-            Resume
+            <Icon className="w-4 h-4" strokeWidth={1.75} />
+            <span className="pointer-events-none absolute top-full mt-2 font-mono text-[10px] uppercase tracking-wider whitespace-nowrap bg-ink text-surface rounded-md px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              {label}
+            </span>
           </a>
-        </div>
-        <button className="md:hidden p-2 -mr-2 text-zinc-700" onClick={() => setOpen(!open)} aria-label="Toggle menu">
-          {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
+        ))}
       </div>
-      {open && (
-        <div className="md:hidden px-6 pb-6 flex flex-col gap-4 bg-white/85">
-          {NAV.map((item) => (
-            <a key={item} href={`#${item.toLowerCase()}`} onClick={() => setOpen(false)} className="text-zinc-700">
-              {item}
-            </a>
-          ))}
-          <a href={LINKS.resume} target="_blank" rel="noopener noreferrer" className="text-emerald-700 font-medium">
-            Resume ↗
-          </a>
-        </div>
-      )}
+      <button onClick={toggle} aria-label={dark ? "Switch to light mode" : "Switch to dark mode"} className={`${pill} grid place-items-center w-10 h-10 sm:w-11 sm:h-11 text-muted hover:text-ink transition-colors`}>
+        {dark ? <Sun className="w-4 h-4" strokeWidth={1.75} /> : <Moon className="w-4 h-4" strokeWidth={1.75} />}
+      </button>
+      <a
+        href={LINKS.resume}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-2 bg-ink text-surface rounded-full p-1 pr-3 sm:pr-4 text-sm font-medium shadow-[0_4px_20px_-6px_rgba(0,0,0,0.35)] hover:opacity-90 transition-opacity"
+      >
+        <span className="grid place-items-center w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-surface text-ink">
+          <Download className="w-4 h-4" strokeWidth={2} />
+        </span>
+        <span className="sm:hidden">CV</span>
+        <span className="hidden sm:inline">Download CV</span>
+      </a>
     </nav>
   );
 };
+
+// Hand-drawn style arrow pointing from the note down to the photo
+const ScribbleArrow = () => (
+  <svg viewBox="0 0 70 60" className="w-14 h-12 text-ink" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M4 6 C 30 4, 52 16, 56 48" />
+    <path d="M47 40 L 56 49 L 63 38" />
+  </svg>
+);
 
 const Hero = () => {
   const stats = [
@@ -113,72 +166,89 @@ const Hero = () => {
   ];
 
   return (
-    <section id="top" className="pt-32 md:pt-40 pb-20 px-6">
-      <div className="max-w-6xl mx-auto">
-        <div className="grid md:grid-cols-[1fr_auto] gap-12 md:gap-16 items-center">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            <p className="inline-flex items-center gap-2 font-mono text-xs text-zinc-500 border border-zinc-200 bg-white rounded-full px-3 py-1.5 mb-8">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Finance × Technology
-            </p>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-zinc-900 leading-[1.05] mb-6">
-              Finance leader who
+    <section id="top">
+      <div className="relative px-5 md:px-12 pt-28 md:pt-32">
+        <div className="flex justify-between">
+          <Label>(Portfolio 2026)</Label>
+          <Label>Dewapriya.com</Label>
+        </div>
+
+        <div className="grid lg:grid-cols-[1fr_auto] gap-10 lg:gap-6 items-end">
+          <div className="pb-10 md:pb-14">
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="mt-8 text-[clamp(2.15rem,8.6vw,4.6rem)] font-bold tracking-[-0.045em] leading-[0.98] text-ink"
+            >
+              Finance leader
               <br />
-              builds with <span className="text-emerald-600">data &amp; code.</span>
-            </h1>
-            <p className="text-lg text-zinc-600 max-w-xl leading-relaxed mb-10">
-              15 years in finance across Sri Lanka, the Philippines and the Maldives, including six as Head of Finance.
-              I now use Python, data and AI to automate and improve the work finance teams do every day.
-            </p>
-            <div className="flex flex-wrap gap-3 items-center">
+              who builds with data
+              <br />
+              <span className="text-faint">and code.</span>
+            </motion.h1>
+
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.15 }} className="flex flex-wrap gap-3 mt-9">
               <a
                 href="#projects"
-                className="inline-flex items-center gap-2 bg-zinc-900 text-white px-6 py-3 rounded-full text-sm font-medium hover:bg-zinc-700 transition-colors"
+                className="inline-flex items-center gap-1.5 bg-surface text-ink border border-ink rounded-full px-5 py-2.5 text-sm font-medium shadow-[0_3px_0_0_var(--ink)] hover:translate-y-[2px] hover:shadow-[0_1px_0_0_var(--ink)] transition-all"
               >
-                View projects <ArrowRight className="w-4 h-4" />
+                See my work <ArrowUpRight className="w-4 h-4" />
               </a>
-              <a
-                href={LINKS.resume}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-white border border-zinc-200 text-zinc-900 px-6 py-3 rounded-full text-sm font-medium hover:border-zinc-400 transition-colors"
-              >
-                <Download className="w-4 h-4" /> Download CV
+              <a href={`mailto:${LINKS.email}`} className="inline-flex items-center gap-2 border border-line text-ink rounded-full px-5 py-2.5 text-sm font-medium hover:border-ink transition-colors">
+                <Mail className="w-4 h-4" /> Email me
               </a>
-              <div className="flex gap-1 ml-2">
-                <a href={LINKS.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="p-2.5 text-zinc-500 hover:text-zinc-900 transition-colors">
-                  <Github className="w-5 h-5" />
+              <div className="flex">
+                <a href={LINKS.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="p-2.5 text-muted hover:text-ink transition-colors">
+                  <Linkedin className="w-5 h-5" strokeWidth={1.75} />
                 </a>
-                <a href={LINKS.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="p-2.5 text-zinc-500 hover:text-zinc-900 transition-colors">
-                  <Linkedin className="w-5 h-5" />
+                <a href={LINKS.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="p-2.5 text-muted hover:text-ink transition-colors">
+                  <Github className="w-5 h-5" strokeWidth={1.75} />
                 </a>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.3 }} className="mt-14 md:mt-20">
+              <p className="text-[15px] md:text-base font-medium text-ink">Turning finance data into tools and dashboards</p>
+              <p className="text-[15px] md:text-base text-muted">from IFRS 16 models to 13-week cash-flow forecasts.</p>
+              <a href="#about" className="inline-flex items-center gap-1 mt-6 font-mono text-[11px] uppercase tracking-[0.08em] text-faint hover:text-ink transition-colors">
+                Scroll <ArrowDown className="w-3 h-3" />
+              </a>
+            </motion.div>
+          </div>
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.97 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.7, delay: 0.15 }}
-            className="hidden md:block"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+            className="relative justify-self-end w-[62%] max-w-[300px] sm:w-[300px] lg:w-[310px]"
           >
-            <div className="w-64 lg:w-72 aspect-[4/5] rounded-3xl overflow-hidden bg-zinc-100 ring-1 ring-zinc-200 shadow-2xl shadow-zinc-300/40">
-              <img src="profile.jpg" alt="Amila Dewapriya" className="w-full h-full object-cover" />
+            <div className="absolute -left-[7.5rem] sm:-left-36 top-6 sm:top-10 flex flex-col items-end -rotate-6 select-none pointer-events-none">
+              <span className="font-hand text-2xl sm:text-[28px] text-ink leading-none whitespace-nowrap">hi, I'm Amila</span>
+              <span className="mr-1 sm:-mr-6">
+                <ScribbleArrow />
+              </span>
+            </div>
+            <div className="group aspect-[4/5] rounded-t-[2rem] overflow-hidden bg-soft border border-b-0 border-line">
+              <img
+                src="profile.jpg"
+                alt="Amila Dewapriya"
+                className="w-full h-full object-cover object-[50%_20%] grayscale contrast-[1.05] group-hover:grayscale-0 transition-[filter] duration-700"
+              />
             </div>
           </motion.div>
         </div>
-
-        <Reveal delay={0.2}>
-          <dl className="mt-20 grid grid-cols-2 md:grid-cols-4 border-t border-zinc-200">
-            {stats.map((s) => (
-              <div key={s.label} className="pt-6 pr-4">
-                <dt className="text-3xl font-semibold tracking-tight text-zinc-900">{s.value}</dt>
-                <dd className="text-sm text-zinc-500 mt-1">{s.label}</dd>
-              </div>
-            ))}
-          </dl>
-        </Reveal>
       </div>
+
+      <Rule />
+      <dl className="grid grid-cols-2 md:grid-cols-4">
+        {stats.map((s, i) => (
+          <div key={s.label} className={`px-5 md:px-8 py-7 border-line ${i % 2 ? "border-l" : ""} ${i > 1 ? "border-t md:border-t-0" : ""} ${i === 2 ? "md:border-l" : ""}`}>
+            <dt className="text-3xl md:text-4xl font-bold tracking-[-0.04em] text-ink">{s.value}</dt>
+            <dd className="font-mono text-[11px] uppercase tracking-[0.06em] text-faint mt-2">{s.label}</dd>
+          </div>
+        ))}
+      </dl>
     </section>
   );
 };
@@ -198,49 +268,47 @@ const About = () => {
       items: ["Microsoft Dynamics 365 BC", "Oracle Fusion Cloud", "Oracle E-Business Suite", "QuickBooks", "Power BI", "Advanced Excel", "Notion"]
     }
   ];
-
   return (
-    <section id="about" className="py-24 px-6 bg-white border-y border-zinc-200/70">
-      <div className="max-w-6xl mx-auto">
-        <SectionHeader index="01" label="About" title="An accountant with an engineer's toolkit." />
-        <div className="grid lg:grid-cols-[2fr_3fr] gap-12 lg:gap-20">
-          <Reveal>
-            <div className="space-y-5 text-zinc-600 leading-relaxed">
-              <p>
-                I started out in audit and accounting in Kandy, then spent six years in branch accounting at{" "}
-                <strong className="text-zinc-900 font-medium">LOLC Holdings</strong> in Sri Lanka. From 2019 I led finance at{" "}
-                <strong className="text-zinc-900 font-medium">LOLC Finance Philippines</strong> as Head of Finance, running a team of nine.
-              </p>
-              <p>
-                Today I'm a Revenue Accountant at <strong className="text-zinc-900 font-medium">Trans Maldivian Airways</strong>. Alongside that, I build tools and dashboards: small, practical software that turns raw data into
-                decisions.
-              </p>
-              <p>
-                I know the numbers, the controls and the month-end reality, and I can build the technology that supports them.
-              </p>
-            </div>
-          </Reveal>
-          <div className="space-y-8">
-            {skills.map((group, i) => (
-              <Reveal key={group.category} delay={i * 0.08}>
-                <div>
-                  <h3 className="font-mono text-xs uppercase tracking-wider text-zinc-400 mb-3">{group.category}</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {group.items.map((item) => (
-                      <span key={item} className="text-sm text-zinc-700 bg-zinc-50 border border-zinc-200 px-3 py-1 rounded-full">
-                        {item}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </Reveal>
-            ))}
+    <section id="about" className="px-5 md:px-12 py-24">
+      <SectionHeader index="01" label="About" title="An accountant" sub="with an engineer's toolkit." />
+      <div className="grid lg:grid-cols-[2fr_3fr] gap-12 lg:gap-20">
+        <Reveal>
+          <div className="space-y-5 text-muted leading-relaxed">
+            <p>
+              I started out in audit and accounting in Kandy, then spent six years in branch accounting at{" "}
+              <strong className="text-ink font-medium">LOLC Holdings</strong> in Sri Lanka. From 2019 I led finance at{" "}
+              <strong className="text-ink font-medium">LOLC Finance Philippines</strong> as Head of Finance, running a team of nine.
+            </p>
+            <p>
+              Today I'm a Revenue Accountant at <strong className="text-ink font-medium">Trans Maldivian Airways</strong>. Alongside that, I build tools and dashboards: small, practical software that turns raw data into
+              decisions.
+            </p>
+            <p>I know the numbers, the controls and the month-end reality, and I can build the technology that supports them.</p>
           </div>
+        </Reveal>
+        <div className="space-y-8">
+          {skills.map((group, i) => (
+            <Reveal key={group.category} delay={i * 0.08}>
+              <div>
+                <Label className="mb-3">{group.category}</Label>
+                <div className="flex flex-wrap gap-2">
+                  {group.items.map((item) => (
+                    <span key={item} className="text-sm text-ink bg-soft border border-line px-3 py-1 rounded-full">
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </Reveal>
+          ))}
         </div>
       </div>
     </section>
   );
 };
+
+const btnPrimary = "inline-flex items-center gap-2 bg-ink text-surface px-5 py-2.5 rounded-full text-sm font-medium hover:opacity-85 transition-opacity";
+const btnOutline = "inline-flex items-center gap-2 border border-line text-ink px-5 py-2.5 rounded-full text-sm font-medium hover:border-ink transition-colors";
 
 const Projects = () => {
   const projects = [
@@ -349,81 +417,81 @@ const Projects = () => {
       href: "projects/seaplane-vs-airliners/"
     }
   ];
-
   return (
-    <section id="projects" className="py-24 px-6">
-      <div className="max-w-6xl mx-auto">
-        <SectionHeader index="02" label="Projects" title="Things I've built." />
-        <div className="space-y-6">
-          {projects.map((p) => (
-            <Reveal key={p.title}>
-              <article className="grid lg:grid-cols-[1.15fr_1fr] bg-white border border-zinc-200 rounded-3xl overflow-hidden">
-                <a href={p.demo} className="group block bg-zinc-100 border-b lg:border-b-0 lg:border-r border-zinc-200 overflow-hidden">
-                  <img
-                    src={p.image}
-                    alt={`${p.title} screenshot`}
-                    loading="lazy"
-                    className="w-full h-full object-cover object-left-top group-hover:scale-[1.02] transition-transform duration-500"
-                  />
-                </a>
-                <div className="p-7 md:p-9 flex flex-col">
-                  <p className="font-mono text-xs text-emerald-700 mb-3">{p.tag}</p>
-                  <h3 className="text-2xl font-semibold tracking-tight text-zinc-900 mb-3">{p.title}</h3>
-                  <p className="text-zinc-600 leading-relaxed mb-5">{p.desc}</p>
-                  <ul className="space-y-2 mb-6">
-                    {p.points.map((pt) => (
-                      <li key={pt} className="text-sm text-zinc-600 leading-relaxed pl-5 relative before:content-[''] before:absolute before:left-0 before:top-[0.65em] before:w-2 before:h-px before:bg-zinc-400">
-                        {pt}
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 mb-7">
-                    {p.stack.map((t) => (
-                      <span key={t} className="font-mono text-xs text-zinc-500">{t}</span>
-                    ))}
-                  </div>
-                  <div className="flex flex-wrap gap-3 mt-auto">
-                    <a href={p.demo} className="inline-flex items-center gap-2 bg-zinc-900 text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-zinc-700 transition-colors">
-                      Open live demo <ArrowUpRight className="w-4 h-4" />
-                    </a>
-                    <a href={p.download} download className="inline-flex items-center gap-2 border border-zinc-200 text-zinc-900 px-5 py-2.5 rounded-full text-sm font-medium hover:border-zinc-400 transition-colors">
-                      <Download className="w-4 h-4" /> Download (HTML)
-                    </a>
-                    <a href={p.code} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 border border-zinc-200 text-zinc-900 px-5 py-2.5 rounded-full text-sm font-medium hover:border-zinc-400 transition-colors">
-                      <Github className="w-4 h-4" /> View code
-                    </a>
-                  </div>
+    <section id="projects" className="px-5 md:px-12 py-24">
+      <SectionHeader index="02" label="Projects" title="Finance tools" sub="I've built." />
+      <div className="space-y-6">
+        {projects.map((p, i) => (
+          <Reveal key={p.title}>
+            <article className="grid lg:grid-cols-[1.15fr_1fr] bg-surface border border-line rounded-3xl overflow-hidden hover:border-faint transition-colors">
+              <a href={p.demo} className="group block bg-soft border-b lg:border-b-0 lg:border-r border-line overflow-hidden">
+                <img
+                  src={p.image}
+                  alt={`${p.title} screenshot`}
+                  loading="lazy"
+                  className="w-full h-full object-cover object-left-top group-hover:scale-[1.02] transition-transform duration-500"
+                />
+              </a>
+              <div className="p-7 md:p-9 flex flex-col min-w-0">
+                <div className="flex justify-between gap-4 mb-3">
+                  <Label>{p.tag}</Label>
+                  <Label>{String(i + 1).padStart(2, "0")}</Label>
                 </div>
-              </article>
-            </Reveal>
-          ))}
-        </div>
-
-        <Reveal>
-          <div className="mt-16">
-            <h3 className="font-mono text-xs uppercase tracking-wider text-zinc-400 mb-4">Other projects</h3>
-            <div className="grid md:grid-cols-2 gap-5">
-              {otherProjects.map((p) => (
-                <a
-                  key={p.title}
-                  href={p.href}
-                  className="group grid grid-cols-[120px_1fr] sm:grid-cols-[160px_1fr] gap-4 items-center bg-white border border-zinc-200 rounded-2xl p-3 pr-5 hover:border-zinc-400 hover:shadow-lg hover:shadow-zinc-200/60 transition-all"
-                >
-                  <img src={p.image} alt={`${p.title} preview`} loading="lazy" className="w-full aspect-[16/10] object-cover rounded-xl bg-zinc-100" />
-                  <div className="min-w-0">
-                    <p className="font-mono text-[11px] text-emerald-700">{p.tag}</p>
-                    <p className="font-semibold text-zinc-900 mt-0.5 inline-flex items-center gap-1">
-                      {p.title}
-                      <ArrowUpRight className="w-4 h-4 text-zinc-400 group-hover:text-emerald-600 transition-colors" />
-                    </p>
-                    <p className="text-sm text-zinc-600 leading-snug mt-1">{p.desc}</p>
-                  </div>
-                </a>
-              ))}
-            </div>
-          </div>
-        </Reveal>
+                <h3 className="text-2xl md:text-[28px] font-bold tracking-[-0.03em] text-ink mb-3">{p.title}</h3>
+                <p className="text-muted leading-relaxed mb-5">{p.desc}</p>
+                <ul className="space-y-2 mb-6">
+                  {p.points.map((pt) => (
+                    <li key={pt} className="text-sm text-muted leading-relaxed pl-5 relative before:content-[''] before:absolute before:left-0 before:top-[0.65em] before:w-2 before:h-px before:bg-faint">
+                      {pt}
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex flex-wrap gap-x-4 gap-y-1 mb-7">
+                  {p.stack.map((t) => (
+                    <span key={t} className="font-mono text-xs text-faint">{t}</span>
+                  ))}
+                </div>
+                <div className="flex flex-wrap gap-3 mt-auto">
+                  <a href={p.demo} className={btnPrimary}>
+                    Open live demo <ArrowUpRight className="w-4 h-4" />
+                  </a>
+                  <a href={p.download} download className={btnOutline}>
+                    <Download className="w-4 h-4" /> Download (HTML)
+                  </a>
+                  <a href={p.code} target="_blank" rel="noopener noreferrer" className={btnOutline}>
+                    <Github className="w-4 h-4" /> View code
+                  </a>
+                </div>
+              </div>
+            </article>
+          </Reveal>
+        ))}
       </div>
+
+      <Reveal>
+        <div className="mt-20">
+          <Label className="mb-5">Other projects</Label>
+          <div className="grid md:grid-cols-2 gap-5">
+            {otherProjects.map((p) => (
+              <a
+                key={p.title}
+                href={p.href}
+                className="group grid grid-cols-[120px_1fr] sm:grid-cols-[160px_1fr] gap-4 items-center bg-surface border border-line rounded-2xl p-3 pr-5 hover:border-ink transition-colors"
+              >
+                <img src={p.image} alt={`${p.title} preview`} loading="lazy" className="w-full aspect-[16/10] object-cover rounded-xl bg-soft" />
+                <div className="min-w-0">
+                  <Label>{p.tag}</Label>
+                  <p className="font-semibold text-ink mt-1 inline-flex items-center gap-1">
+                    {p.title}
+                    <ArrowUpRight className="w-4 h-4 text-faint group-hover:text-ink transition-colors" />
+                  </p>
+                  <p className="text-sm text-muted leading-snug mt-1">{p.desc}</p>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </Reveal>
     </section>
   );
 };
@@ -478,34 +546,31 @@ const Experience = () => {
       ]
     }
   ];
-
   return (
-    <section id="experience" className="py-24 px-6 bg-white border-y border-zinc-200/70">
-      <div className="max-w-6xl mx-auto">
-        <SectionHeader index="03" label="Experience" title="Where I've worked." />
-        <div className="divide-y divide-zinc-200 border-t border-zinc-200">
-          {jobs.map((job) => (
-            <Reveal key={job.company}>
-              <div className="grid md:grid-cols-[220px_1fr] gap-4 md:gap-12 py-10">
-                <div>
-                  <p className="font-mono text-sm text-zinc-900">{job.period}</p>
-                  <p className="font-mono text-xs text-zinc-400 mt-1">{job.loc}</p>
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold tracking-tight text-zinc-900">{job.role}</h3>
-                  <p className="text-emerald-700 mb-4">{job.company}</p>
-                  <ul className="space-y-2">
-                    {job.points.map((pt) => (
-                      <li key={pt} className="text-zinc-600 leading-relaxed pl-5 relative before:content-[''] before:absolute before:left-0 before:top-[0.7em] before:w-2 before:h-px before:bg-zinc-400">
-                        {pt}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+    <section id="experience" className="px-5 md:px-12 py-24">
+      <SectionHeader index="03" label="Experience" title="15 years," sub="three countries." />
+      <div className="divide-y divide-line border-t border-line">
+        {jobs.map((job) => (
+          <Reveal key={job.company}>
+            <div className="grid md:grid-cols-[220px_1fr] gap-4 md:gap-12 py-10">
+              <div>
+                <p className="font-mono text-sm text-ink">{job.period}</p>
+                <p className="font-mono text-xs text-faint mt-1">{job.loc}</p>
               </div>
-            </Reveal>
-          ))}
-        </div>
+              <div>
+                <h3 className="text-xl md:text-2xl font-bold tracking-[-0.03em] text-ink">{job.role}</h3>
+                <p className="text-muted mb-4">{job.company}</p>
+                <ul className="space-y-2">
+                  {job.points.map((pt) => (
+                    <li key={pt} className="text-muted leading-relaxed pl-5 relative before:content-[''] before:absolute before:left-0 before:top-[0.7em] before:w-2 before:h-px before:bg-faint">
+                      {pt}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </Reveal>
+        ))}
       </div>
     </section>
   );
@@ -525,74 +590,75 @@ const Credentials = () => {
     { title: "Member · M11025", org: "Association of Accounting Technicians of Sri Lanka" },
     { title: "Member · ACPM02190", org: "Chartered Professional Managers Sri Lanka" }
   ];
-
   return (
-    <section id="credentials" className="py-24 px-6">
-      <div className="max-w-6xl mx-auto">
-        <SectionHeader index="04" label="Credentials" title="Education & memberships." />
-        <div className="grid md:grid-cols-2 gap-12 md:gap-20">
-          <Reveal>
-            <div>
-              <h3 className="font-mono text-xs uppercase tracking-wider text-zinc-400 mb-4">Education & Certificates</h3>
-              <ul className="divide-y divide-zinc-200 border-t border-zinc-200">
-                {education.map((e) => (
-                  <li key={e.title} className="py-4 flex justify-between gap-6">
-                    <div>
-                      <p className="font-medium text-zinc-900">{e.title}</p>
-                      <p className="text-sm text-zinc-500">{e.org}</p>
-                    </div>
-                    {e.year && <span className="font-mono text-sm text-zinc-400 shrink-0">{e.year}</span>}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </Reveal>
-          <Reveal delay={0.08}>
-            <div>
-              <h3 className="font-mono text-xs uppercase tracking-wider text-zinc-400 mb-4">Professional Memberships</h3>
-              <ul className="divide-y divide-zinc-200 border-t border-zinc-200">
-                {memberships.map((m) => (
-                  <li key={m.org} className="py-4">
-                    <p className="font-medium text-zinc-900">{m.org}</p>
-                    <p className="text-sm text-zinc-500">{m.title}</p>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </Reveal>
-        </div>
+    <section id="credentials" className="px-5 md:px-12 py-24">
+      <SectionHeader index="04" label="Credentials" title="Education" sub="& memberships." />
+      <div className="grid md:grid-cols-2 gap-12 md:gap-20">
+        <Reveal>
+          <div>
+            <Label className="mb-4">Education & certificates</Label>
+            <ul className="divide-y divide-line border-t border-line">
+              {education.map((e) => (
+                <li key={e.title} className="py-4 flex justify-between gap-6">
+                  <div>
+                    <p className="font-medium text-ink">{e.title}</p>
+                    <p className="text-sm text-muted">{e.org}</p>
+                  </div>
+                  {e.year && <span className="font-mono text-sm text-faint shrink-0">{e.year}</span>}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Reveal>
+        <Reveal delay={0.08}>
+          <div>
+            <Label className="mb-4">Professional memberships</Label>
+            <ul className="divide-y divide-line border-t border-line">
+              {memberships.map((m) => (
+                <li key={m.org} className="py-4">
+                  <p className="font-medium text-ink">{m.org}</p>
+                  <p className="text-sm text-muted">{m.title}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Reveal>
       </div>
     </section>
   );
 };
 
 const Contact = () => (
-  <section id="contact" className="px-6 pb-6">
-    <div className="max-w-6xl mx-auto bg-zinc-900 text-white rounded-3xl px-8 py-16 md:px-16 md:py-20">
+  <section id="contact" className="p-3 md:p-6">
+    <div className="bg-ink text-surface rounded-[1.75rem] px-7 py-16 md:px-14 md:py-20">
       <Reveal>
-        <p className="font-mono text-xs text-zinc-500 mb-4">
-          <span className="text-emerald-400">05</span> / Contact
-        </p>
-        <h2 className="text-3xl md:text-5xl font-semibold tracking-tight mb-5 max-w-2xl">
-          Let's talk finance, data or AI.
+        <p className="font-mono text-[11px] uppercase tracking-[0.08em] opacity-50 mb-4">(05) Contact</p>
+        <h2 className="text-4xl md:text-6xl font-bold tracking-[-0.04em] leading-[1.02] mb-6 max-w-3xl">
+          Let's talk finance,
+          <br />
+          <span className="opacity-45">data or AI.</span>
         </h2>
-        <p className="text-zinc-400 max-w-lg mb-10 leading-relaxed">
+        <p className="opacity-65 max-w-lg mb-10 leading-relaxed">
           Open to finance leadership roles, finance-technology projects and conversations about bringing automation into finance teams.
         </p>
         <div className="flex flex-wrap gap-3">
-          <a href={`mailto:${LINKS.email}`} className="inline-flex items-center gap-2 bg-white text-zinc-900 px-6 py-3 rounded-full text-sm font-medium hover:bg-emerald-400 transition-colors">
-            <Mail className="w-4 h-4" /> {LINKS.email}
+          <a href={`mailto:${LINKS.email}`} className="inline-flex items-center gap-2 bg-surface text-ink px-6 py-3 rounded-full text-sm font-medium hover:opacity-85 transition-opacity">
+            <Mail className="w-4 h-4" /> Email me
           </a>
-          <a href={`tel:${LINKS.phone.replace(/\s/g, "")}`} className="inline-flex items-center gap-2 border border-white/20 px-6 py-3 rounded-full text-sm font-medium hover:bg-white/10 transition-colors">
+          <a href={LINKS.resume} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-surface text-ink px-6 py-3 rounded-full text-sm font-medium hover:opacity-85 transition-opacity">
+            <Download className="w-4 h-4" /> Download CV
+          </a>
+          <a href={`tel:${LINKS.phone.replace(/\s/g, "")}`} className="inline-flex items-center gap-2 border border-current/25 px-6 py-3 rounded-full text-sm font-medium hover:border-current transition-colors">
             <Phone className="w-4 h-4" /> {LINKS.phone}
           </a>
-          <a href={LINKS.linkedin} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 border border-white/20 px-6 py-3 rounded-full text-sm font-medium hover:bg-white/10 transition-colors">
+          <a href={LINKS.linkedin} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 border border-current/25 px-6 py-3 rounded-full text-sm font-medium hover:border-current transition-colors">
             <Linkedin className="w-4 h-4" /> LinkedIn
           </a>
-          <a href={LINKS.github} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 border border-white/20 px-6 py-3 rounded-full text-sm font-medium hover:bg-white/10 transition-colors">
+          <a href={LINKS.github} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 border border-current/25 px-6 py-3 rounded-full text-sm font-medium hover:border-current transition-colors">
             <Github className="w-4 h-4" /> GitHub
           </a>
         </div>
+        <p className="font-mono text-xs opacity-50 mt-8 break-all">{LINKS.email}</p>
       </Reveal>
     </div>
   </section>
@@ -600,22 +666,29 @@ const Contact = () => (
 
 export default function App() {
   return (
-    <div className="font-sans selection:bg-emerald-200 selection:text-zinc-900">
+    <div className="font-sans selection:bg-ink selection:text-surface">
       <Navbar />
-      <main>
-        <Hero />
-        <About />
-        <Projects />
-        <Experience />
-        <Credentials />
-        <Contact />
-      </main>
-      <footer className="px-6 py-10">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-zinc-500">
-          <p>© {new Date().getFullYear()} Amila Dewapriya</p>
-          <p className="font-mono text-xs">Built with React, TypeScript & Tailwind</p>
-        </div>
-      </footer>
+      {/* The page "sheet": a framed white column on a light grey background */}
+      <div className="max-w-6xl mx-auto bg-surface md:border-x border-line min-h-screen transition-colors duration-300">
+        <main>
+          <Hero />
+          <Rule />
+          <About />
+          <Rule />
+          <Projects />
+          <Rule />
+          <Experience />
+          <Rule />
+          <Credentials />
+          <Contact />
+        </main>
+        <footer className="px-5 md:px-12 py-8">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
+            <Label>© {new Date().getFullYear()} Amila Dewapriya</Label>
+            <Label>Built with React, TypeScript & Tailwind</Label>
+          </div>
+        </footer>
+      </div>
     </div>
   );
 }

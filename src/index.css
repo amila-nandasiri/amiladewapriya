@@ -1,16 +1,49 @@
 @import "tailwindcss";
 
-@theme {
+/* Colour tokens: light by default, dark when <html class="dark"> */
+:root {
+  --page: #f4f4f5;
+  --surface: #ffffff;
+  --ink: #0a0a0a;
+  --muted: #52525b;
+  --faint: #8b8b93;
+  --line: #e4e4e7;
+  --soft: #f4f4f5;
+  color-scheme: light;
+}
+.dark {
+  --page: #000000;
+  --surface: #0c0c0d;
+  --ink: #fafafa;
+  --muted: #a1a1aa;
+  --faint: #6b6b73;
+  --line: #27272a;
+  --soft: #18181b;
+  color-scheme: dark;
+}
+
+@theme inline {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-hand: "Caveat", "Comic Sans MS", cursive;
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-soft: var(--soft);
 }
 
 @layer base {
   html {
     scroll-behavior: smooth;
-    scroll-padding-top: 4rem;
+    scroll-padding-top: 5rem;
   }
   body {
-    @apply bg-zinc-50 text-zinc-900 antialiased;
+    background: var(--page);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    transition: background-color 0.3s;
   }
 }

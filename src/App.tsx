@@ -266,8 +266,8 @@ const Hero = () => {
             </motion.div>
 
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.3 }} className="mt-14 md:mt-20">
-              <p className="text-[15px] md:text-base font-medium text-ink">Reporting, automated.</p>
-              <p className="text-[15px] md:text-base text-muted">Excel, Power BI and React, from ledger to dashboard.</p>
+              <p className="text-[15px] md:text-base font-medium text-ink">Advanced Excel, Power BI and AI.</p>
+              <p className="text-[15px] md:text-base text-muted">From ledger to dashboard, automated.</p>
               <a href="#about" className="inline-flex items-center gap-1 mt-6 font-mono text-[11px] uppercase tracking-[0.08em] text-faint hover:text-ink transition-colors">
                 Scroll <ArrowDown className="w-3 h-3" />
               </a>

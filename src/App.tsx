@@ -3,6 +3,8 @@ import {
   ArrowDown,
   ArrowUpRight,
   Briefcase,
+  Check,
+  Copy,
   Download,
   Github,
   GraduationCap,
@@ -15,7 +17,7 @@ import {
   Sun,
   User
 } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 const LINKS = {
   email: "amiladnandasiri@gmail.com",
@@ -106,6 +108,63 @@ const useActiveSection = () => {
   return active;
 };
 
+// "Email me" opens a small menu: a plain mailto link does nothing on computers
+// with no email app set up, so offer Gmail, Outlook and copy as well.
+const EmailButton = ({ className, children }: { className: string; children: ReactNode }) => {
+  const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: Event) => {
+      if (e instanceof KeyboardEvent ? e.key === "Escape" : !ref.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("pointerdown", close);
+    document.addEventListener("keydown", close);
+    return () => {
+      document.removeEventListener("pointerdown", close);
+      document.removeEventListener("keydown", close);
+    };
+  }, [open]);
+  const to = encodeURIComponent(LINKS.email);
+  const subject = encodeURIComponent("Hello Amila");
+  const options = [
+    { label: "Gmail", href: `https://mail.google.com/mail/?view=cm&fs=1&to=${to}&su=${subject}` },
+    { label: "Outlook", href: `https://outlook.office.com/mail/deeplink/compose?to=${to}&subject=${subject}` },
+    { label: "Email app", href: `mailto:${LINKS.email}?subject=${subject}` }
+  ];
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(LINKS.email);
+    } catch {
+      window.prompt("Copy my email address:", LINKS.email);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
+  };
+  const item = "flex w-full items-center gap-2 px-3 py-2 rounded-lg text-sm text-ink hover:bg-soft transition-colors text-left";
+  return (
+    <div ref={ref} className="relative">
+      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-haspopup="menu" className={className}>
+        {children}
+      </button>
+      {open && (
+        <div role="menu" className="absolute left-0 top-full mt-2 z-40 w-60 bg-surface border border-line rounded-2xl p-1.5 shadow-[0_12px_32px_-12px_rgba(0,0,0,0.25)]">
+          <p className="px-3 pt-1.5 pb-2 font-mono text-[11px] text-faint break-all">{LINKS.email}</p>
+          {options.map((o) => (
+            <a key={o.label} role="menuitem" href={o.href} target={o.href.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer" onClick={() => setOpen(false)} className={item}>
+              <Mail className="w-4 h-4 text-muted" /> Open in {o.label}
+            </a>
+          ))}
+          <button type="button" role="menuitem" onClick={copy} className={item}>
+            {copied ? <Check className="w-4 h-4 text-muted" /> : <Copy className="w-4 h-4 text-muted" />} {copied ? "Copied" : "Copy address"}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const Navbar = () => {
   const { dark, toggle } = useTheme();
   const active = useActiveSection();
@@ -173,13 +232,13 @@ const Hero = () => {
           <Label>Dewapriya.com</Label>
         </div>
 
-        <div className="grid lg:grid-cols-[1fr_auto] gap-10 lg:gap-6 items-end">
+        <div className="grid lg:grid-cols-[minmax(0,1fr)_auto] gap-10 lg:gap-6 items-end">
           <div className="pb-10 md:pb-14">
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="mt-8 text-[clamp(2.15rem,8.6vw,4.6rem)] font-bold tracking-[-0.045em] leading-[0.98] text-ink"
+              className="mt-8 text-[clamp(2.15rem,8.6vw,4.6rem)] lg:text-[clamp(3rem,5vw,4.6rem)] font-bold tracking-[-0.045em] leading-[0.98] text-ink"
             >
               Finance leader
               <br />
@@ -195,9 +254,9 @@ const Hero = () => {
               >
                 See my work <ArrowUpRight className="w-4 h-4" />
               </a>
-              <a href={`mailto:${LINKS.email}`} className="inline-flex items-center gap-2 border border-line text-ink rounded-full px-5 py-2.5 text-sm font-medium hover:border-ink transition-colors">
+              <EmailButton className="inline-flex items-center gap-2 border border-line text-ink rounded-full px-5 py-2.5 text-sm font-medium hover:border-ink transition-colors">
                 <Mail className="w-4 h-4" /> Email me
-              </a>
+              </EmailButton>
               <div className="flex">
                 <a href={LINKS.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="p-2.5 text-muted hover:text-ink transition-colors">
                   <Linkedin className="w-5 h-5" strokeWidth={1.75} />
@@ -642,9 +701,9 @@ const Contact = () => (
           Open to finance leadership roles, finance-technology projects and conversations about bringing automation into finance teams.
         </p>
         <div className="flex flex-wrap gap-3">
-          <a href={`mailto:${LINKS.email}`} className="inline-flex items-center gap-2 bg-surface text-ink px-6 py-3 rounded-full text-sm font-medium hover:opacity-85 transition-opacity">
+          <EmailButton className="inline-flex items-center gap-2 bg-surface text-ink px-6 py-3 rounded-full text-sm font-medium hover:opacity-85 transition-opacity">
             <Mail className="w-4 h-4" /> Email me
-          </a>
+          </EmailButton>
           <a href={LINKS.resume} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-surface text-ink px-6 py-3 rounded-full text-sm font-medium hover:opacity-85 transition-opacity">
             <Download className="w-4 h-4" /> Download CV
           </a>
@@ -666,7 +725,7 @@ const Contact = () => (
 
 export default function App() {
   return (
-    <div className="font-sans selection:bg-ink selection:text-surface">
+    <div className="font-sans selection:bg-ink selection:text-surface overflow-x-clip">
       <Navbar />
       {/* The page "sheet": a framed white column on a light grey background */}
       <div className="max-w-6xl mx-auto bg-surface md:border-x border-line min-h-screen transition-colors duration-300">
